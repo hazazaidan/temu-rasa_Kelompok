@@ -1,0 +1,93 @@
+/* BARU: load font (harus paling atas, sebelum @tailwind) */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Plus+Jakarta+Sans:wght@400..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== KODE LAMA (tidak diubah) ===== */
+body { @apply bg-cream font-sans text-navy-dark antialiased; }
+.logo { @apply font-display italic font-black text-navy; }
+.input { @apply w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:ring-2 focus:ring-navy/20; }
+
+/* ===== BARU: dasar halaman ===== */
+html { scroll-behavior: smooth; }
+
+::selection { background: #F5B21B; color: #0A2750; }
+
+/* Fokus keyboard terlihat jelas di semua elemen interaktif */
+:focus-visible {
+  outline: 3px solid #F5B21B;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+img { @apply max-w-full; }
+
+/* ===== BARU: komponen khas Temu Rasa ===== */
+@layer components {
+  /* Judul besar ala logo: tebal, rapat, italic */
+  .title-display {
+    @apply font-display font-black italic leading-[0.95] tracking-tight text-navy;
+  }
+
+  /* Tagline tulisan tangan: "Banyak Rasa, Satu Cerita" */
+  .tagline {
+    @apply font-script text-2xl font-bold text-navy-light md:text-3xl;
+    transform: rotate(-3deg);
+    transform-origin: left center;
+  }
+
+  /* Badge ala stiker (Best Seller, Good Food Good Mood) */
+  .sticker {
+    @apply inline-flex items-center gap-1 rounded-full bg-sun px-3 py-1 text-xs font-extrabold text-navy-dark shadow-sun;
+    transform: rotate(-6deg);
+  }
+  .sticker-chili {
+    @apply bg-chili text-white;
+    box-shadow: 0 8px 20px -6px rgba(216, 67, 43, 0.5);
+  }
+
+  /* Blob kuning di belakang foto (taruh di wrapper relative) */
+  .blob-sun {
+    @apply absolute -z-10 bg-sun rounded-blob;
+  }
+
+  /* Garis bawah coretan tangan untuk judul section */
+  .scribble {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6 C 20 1, 40 9, 60 5 S 100 2, 118 6' fill='none' stroke='%23F5B21B' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.35em;
+    padding-bottom: 0.2em;
+  }
+
+  /* Pill filter / tab (Semua, Makanan, Minuman) */
+  .pill {
+    @apply inline-flex items-center rounded-full border border-navy/15 bg-white px-4 py-2 text-sm font-bold text-navy transition-colors hover:border-navy;
+  }
+  .pill-active {
+    @apply border-navy bg-navy text-white hover:border-navy;
+  }
+
+  /* Wadah halaman: lebar & padding konsisten */
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* ===== BARU: utilitas ===== */
+@layer utilities {
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
+
+/* ===== BARU: hormati pengguna yang mematikan animasi ===== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
