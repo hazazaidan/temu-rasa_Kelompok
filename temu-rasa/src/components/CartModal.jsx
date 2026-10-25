@@ -1,12 +1,73 @@
-import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useCart } from '../context/CartContext'
-import { rupiah } from '../data/products'
+import { useAuth } from '../context/AuthContext'
+import { rupiah } from '../data/menu'
 import { Thumb } from './FoodCard'
 import Button from './Button'
 
 export default function CartModal() {
   const { items, subtotal, inc, dec, remove, cartOpen, setCartOpen } = useCart()
+  const { user, openModal } = useAuth()
+  const navigate = useNavigate()
   const close = () => setCartOpen(false)
+
+  // Tekan Esc = tutup keranjang
+  useEffect(() => {
+    if (!cartOpen) return
+    const onKey = (e) => e.key === 'Escape' && setCartOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [cartOpen, setCartOpen])
+
+  // Kunci scroll halaman di belakang saat keranjang terbuka
+  useEffect(() => {
+    if (!cartOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [cartOpen])
+
+  const handleRemove = (item) => {
+    remove(item.key)
+    toast(`${item.product.name} dihapus dari keranjang`)
+  }
+
+  // Jika pengunjung belum login tapi keranjang terbuka, tampilkan konfirmasi login
+  if (!user && cartOpen) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div onClick={close} className="absolute inset-0 bg-navy-dark/50 backdrop-blur-sm" />
+        <div className="relative w-full max-w-sm rounded-[2rem] bg-white p-7 text-center shadow-2xl">
+          <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 text-navy/40 hover:bg-navy/5">
+            <X size={18} />
+          </button>
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sun-soft text-navy">
+            <ShoppingBag size={28} />
+          </div>
+          <h3 className="mt-3 font-display text-xl font-black text-navy">Keranjang Belanja</h3>
+          <p className="mt-2 text-xs text-navy/70 leading-relaxed">
+            Silakan masuk akun terlebih dahulu untuk melihat dan menggunakan keranjang belanja Anda.
+          </p>
+          <Button
+            variant="accent"
+            size="md"
+            className="mt-5 w-full justify-center"
+            onClick={() => {
+              close()
+              openModal('login')
+            }}
+          >
+            Masuk Akun Sekarang
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -21,6 +82,7 @@ export default function CartModal() {
       />
       <aside
         role="dialog"
+        aria-modal="true"
         aria-label="Keranjang Belanja"
         className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-cream shadow-2xl transition-transform duration-300 ${
           cartOpen ? 'translate-x-0' : 'translate-x-full'
@@ -56,7 +118,7 @@ export default function CartModal() {
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-display text-base font-bold leading-tight text-navy-dark">{i.product.name}</p>
                       <button
-                        onClick={() => remove(i.key)}
+                        onClick={() => handleRemove(i)}
                         aria-label={`Hapus ${i.product.name}`}
                         className="shrink-0 rounded-full p-1.5 text-navy/45 transition-colors hover:bg-chili/10 hover:text-chili"
                       >
@@ -94,8 +156,24 @@ export default function CartModal() {
                 <span className="font-semibold text-navy-dark/70">Subtotal</span>
                 <span className="text-2xl font-extrabold text-navy">{rupiah(subtotal)}</span>
               </div>
-              <p className="text-xs text-navy/55">Ongkir dihitung saat checkout.</p>
-              <Button to="/checkout" onClick={close} variant="accent" size="lg" className="w-full">Checkout</Button>
+              <p className="text-xs text-navy/55">Ongkir & diskon dihitung saat checkout.</p>
+              <Button
+                variant="accent"
+                size="lg"
+                className="w-full justify-center"
+                onClick={() => {
+                  if (!user) {
+                    close()
+                    openModal('login')
+                    toast('Silakan masuk akun terlebih dahulu untuk memesan', { icon: '🔐' })
+                  } else {
+                    close()
+                    navigate('/checkout')
+                  }
+                }}
+              >
+                Lanjut ke Checkout <ArrowRight size={18} />
+              </Button>
             </div>
           </>
         )}

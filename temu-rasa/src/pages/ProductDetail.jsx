@@ -1,18 +1,63 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Star, Minus, Plus, ShoppingBag, ChevronRight } from 'lucide-react'
-import { products, rupiah } from '../data/products'
+import toast from 'react-hot-toast'
+import { rupiah } from '../data/products'
+import useProducts from '../hooks/useProducts'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 import FoodCard, { Thumb } from '../components/FoodCard'
 import Button from '../components/Button'
+import ErrorState from '../components/ErrorState'
+
+// Skeleton khusus halaman detail (mengikuti bentuk layout: foto besar + info)
+function DetailSkeleton() {
+  return (
+    <div role="status" aria-label="Memuat menu" className="container-page animate-pulse py-8 md:py-12">
+      <div className="h-4 w-48 rounded-full bg-sun-soft" />
+      <div className="mt-8 grid items-start gap-10 md:grid-cols-2 md:gap-14">
+        <div className="aspect-square w-full rounded-[2.5rem] bg-sun-soft" />
+        <div className="space-y-4">
+          <div className="h-10 w-3/4 rounded-full bg-sun-soft" />
+          <div className="h-8 w-1/3 rounded-full bg-sun-soft" />
+          <div className="h-4 w-1/4 rounded-full bg-sun-soft" />
+          <div className="h-4 w-full rounded-full bg-sun-soft" />
+          <div className="h-4 w-5/6 rounded-full bg-sun-soft" />
+          <div className="flex gap-2 pt-6">
+            <div className="h-10 w-24 rounded-full bg-sun-soft" />
+            <div className="h-10 w-24 rounded-full bg-sun-soft" />
+            <div className="h-10 w-24 rounded-full bg-sun-soft" />
+          </div>
+          <div className="h-14 w-full rounded-full bg-sun-soft" />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function ProductDetail() {
   const { id } = useParams()
-  const p = products.find((x) => x.id === Number(id))
+  const { products, loading, error, reload } = useProducts()
   const { addItem } = useCart()
+  const { user, openModal } = useAuth()
   const [variant, setVariant] = useState(null)
   const [qty, setQty] = useState(1)
 
+  // pindah ke menu lain (mis. dari "Kamu mungkin juga suka") = varian dan jumlah kembali awal
+  useEffect(() => {
+    setVariant(null)
+    setQty(1)
+  }, [id])
+
+  // 1. Loading
+  if (loading) return <DetailSkeleton />
+
+  // 2. Error koneksi
+  if (error) return <ErrorState message={error} onRetry={reload} />
+
+  const p = products.find((x) => x.id === Number(id))
+
+  // 3. Menu tidak ada
   if (!p) return (
     <div className="container-page max-w-xl py-24 text-center">
       <h1 className="font-display text-3xl font-black text-navy">Menu tidak ditemukan</h1>
@@ -20,8 +65,20 @@ export default function ProductDetail() {
       <Button to="/menu" className="mt-6">Kembali ke Menu</Button>
     </div>
   )
-  const selected = variant ?? p.variants[0]
+
+  const variants = p.variants ?? []
+  const selected = variant ?? variants[0] ?? ''
   const related = products.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 4)
+
+  const handleAdd = () => {
+    if (!user) {
+      openModal('login')
+      toast('Silakan masuk akun terlebih dahulu untuk memesan menu', { icon: '🔐' })
+      return
+    }
+    addItem(p, qty, selected)
+    toast.success(`${qty}x ${p.name} masuk keranjang`)
+  }
 
   return (
     <div className="container-page py-8 md:py-12">
@@ -57,19 +114,23 @@ export default function ProductDetail() {
           </p>
           <p className="mt-5 max-w-prose leading-relaxed text-navy-dark/75">{p.desc}</p>
 
-          <h3 className="mt-8 font-display text-lg font-bold text-navy-dark">Pilihan Varian</h3>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {p.variants.map((v) => (
-              <button
-                key={v}
-                onClick={() => setVariant(v)}
-                aria-pressed={selected === v}
-                className={`pill ${selected === v ? 'pill-active' : ''}`}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
+          {variants.length > 0 && (
+            <>
+              <h3 className="mt-8 font-display text-lg font-bold text-navy-dark">Pilihan Varian</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {variants.map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setVariant(v)}
+                    aria-pressed={selected === v}
+                    className={`pill ${selected === v ? 'pill-active' : ''}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <div className="mt-8 flex flex-wrap items-center gap-3 sm:flex-nowrap">
             <div className="flex items-center gap-1 rounded-full border-2 border-navy/15 bg-white p-1">
@@ -82,42 +143,48 @@ export default function ProductDetail() {
               </button>
               <span className="w-8 text-center text-lg font-extrabold text-navy" aria-live="polite">{qty}</span>
               <button
-                onClick={() => setQty((q) => q + 1)}
+                onClick={() => setQty((q) => Math.min(99, q + 1))}
                 aria-label="Tambah"
                 className="flex h-10 w-10 items-center justify-center rounded-full text-navy transition-colors hover:bg-navy/5 active:scale-95"
               >
                 <Plus size={16} />
               </button>
             </div>
-            <Button onClick={() => addItem(p, qty, selected)} variant="accent" size="lg" className="flex-1">
+            <Button onClick={handleAdd} variant="accent" size="lg" className="flex-1">
               <ShoppingBag size={18} /> Tambah ke Keranjang
             </Button>
           </div>
 
-          <div className="mt-10 rounded-3xl bg-sun-soft p-5">
-            <h3 className="font-display text-lg font-bold text-navy-dark">Komposisi</h3>
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {p.composition.map((c) => (
-                <li key={c} className="rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-navy-dark/80">
-                  {c}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {p.composition?.length > 0 && (
+            <div className="mt-10 rounded-3xl bg-sun-soft p-5">
+              <h3 className="font-display text-lg font-bold text-navy-dark">Komposisi</h3>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {p.composition.map((c) => (
+                  <li key={c} className="rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-navy-dark/80">
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mt-16 flex flex-wrap items-end gap-x-4">
-        <h2 className="font-display text-3xl font-black text-navy">
-          <span className="scribble">Kamu mungkin juga suka</span>
-        </h2>
-        <p className="font-script text-2xl font-bold text-navy-light">Coba juga yuk!</p>
-      </div>
-      <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
-        {related.map((r) => (
-          <FoodCard key={r.id} product={r} badge={r.bestSeller ? 'Best Seller' : undefined} />
-        ))}
-      </div>
+      {related.length > 0 && (
+        <>
+          <div className="mt-16 flex flex-wrap items-end gap-x-4">
+            <h2 className="font-display text-3xl font-black text-navy">
+              <span className="scribble">Kamu mungkin juga suka</span>
+            </h2>
+            <p className="font-script text-2xl font-bold text-navy-light">Coba juga yuk!</p>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+            {related.map((r) => (
+              <FoodCard key={r.id} product={r} badge={r.bestSeller ? 'Best Seller' : undefined} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

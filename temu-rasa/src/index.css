@@ -1,93 +1,420 @@
-/* BARU: load font (harus paling atas, sebelum @tailwind) */
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Plus+Jakarta+Sans:wght@400..800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ===== KODE LAMA (tidak diubah) ===== */
-body { @apply bg-cream font-sans text-navy-dark antialiased; }
-.logo { @apply font-display italic font-black text-navy; }
-.input { @apply w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:ring-2 focus:ring-navy/20; }
+/* ========================================
+   TEMU RASA — GLOBAL STYLES
+======================================== */
 
-/* ===== BARU: dasar halaman ===== */
-html { scroll-behavior: smooth; }
+/* Dasar halaman */
+html {
+  scroll-behavior: smooth;
+}
 
-::selection { background: #F5B21B; color: #0A2750; }
+body {
+  @apply bg-cream font-sans text-navy-dark antialiased;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #FDFBF7;
+  /* Ornamen Latar Khas Nusantara & Ambient Glow Mewah */
+  background-image:
+    radial-gradient(ellipse at 8% 18%, rgba(245, 178, 27, 0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 92% 55%, rgba(15, 56, 112, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 85%, rgba(245, 178, 27, 0.07) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%230F3870' fill-opacity='0.024' fill-rule='evenodd'%3E%3Cpath d='M40 40c0-8.837 7.163-16 16-16s16 7.163 16 16-7.163 16-16 16-16-7.163-16-16zm-32 0c0-8.837 7.163-16 16-16s16 7.163 16 16-7.163 16-16 16-16-7.163-16-16zm16-32c0-8.837 7.163-16 16-16s16 7.163 16 16-7.163 16-16 16-16-7.163-16-16zm0 64c0-8.837 7.163-16 16-16s16 7.163 16 16-7.163 16-16 16-16-7.163-16-16z'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
 
-/* Fokus keyboard terlihat jelas di semua elemen interaktif */
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: #F5B21B;
+  color: #0A2750;
+}
+
+/* Fokus keyboard */
 :focus-visible {
   outline: 3px solid #F5B21B;
   outline-offset: 3px;
   border-radius: 6px;
 }
 
-img { @apply max-w-full; }
+/* Gambar */
+img {
+  @apply max-w-full;
+}
 
-/* ===== BARU: komponen khas Temu Rasa ===== */
+/* Logo dan input */
+.logo {
+  @apply font-display italic font-black text-navy;
+}
+
+.input {
+  @apply w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:ring-2 focus:ring-navy/20;
+}
+
+/* ========================================
+   KOMPONEN KHAS TEMU RASA
+======================================== */
+
 @layer components {
-  /* Judul besar ala logo: tebal, rapat, italic */
+  /* Judul utama */
   .title-display {
     @apply font-display font-black italic leading-[0.95] tracking-tight text-navy;
   }
 
-  /* Tagline tulisan tangan: "Banyak Rasa, Satu Cerita" */
+  /* Tagline */
   .tagline {
     @apply font-script text-2xl font-bold text-navy-light md:text-3xl;
     transform: rotate(-3deg);
     transform-origin: left center;
   }
 
-  /* Badge ala stiker (Best Seller, Good Food Good Mood) */
+  /* Badge */
   .sticker {
     @apply inline-flex items-center gap-1 rounded-full bg-sun px-3 py-1 text-xs font-extrabold text-navy-dark shadow-sun;
     transform: rotate(-6deg);
   }
+
   .sticker-chili {
     @apply bg-chili text-white;
     box-shadow: 0 8px 20px -6px rgba(216, 67, 43, 0.5);
   }
 
-  /* Blob kuning di belakang foto (taruh di wrapper relative) */
+  /* Dekorasi blob */
   .blob-sun {
-    @apply absolute -z-10 bg-sun rounded-blob;
+    @apply absolute -z-10 rounded-blob bg-sun;
   }
 
-  /* Garis bawah coretan tangan untuk judul section */
+  /* Garis coretan di bawah judul */
   .scribble {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6 C 20 1, 40 9, 60 5 S 100 2, 118 6' fill='none' stroke='%23F5B21B' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6 C20 1 40 9 60 5 S100 2 118 6' fill='none' stroke='%23F5B21B' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: 0 100%;
     background-size: 100% 0.35em;
     padding-bottom: 0.2em;
   }
 
-  /* Pill filter / tab (Semua, Makanan, Minuman) */
+  /* Tombol filter */
   .pill {
-    @apply inline-flex items-center rounded-full border border-navy/15 bg-white px-4 py-2 text-sm font-bold text-navy transition-colors hover:border-navy;
-  }
-  .pill-active {
-    @apply border-navy bg-navy text-white hover:border-navy;
+    @apply inline-flex items-center rounded-full border border-navy/15 bg-white/90 px-4 py-2 text-sm font-bold text-navy backdrop-blur-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:border-navy hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95;
   }
 
-  /* Wadah halaman: lebar & padding konsisten */
+  .pill-active {
+    @apply border-navy bg-navy text-white shadow-card ring-2 ring-navy/20 hover:border-navy hover:text-white;
+  }
+
+  /* Kontainer halaman */
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
+
+  /* Kartu Kaca Mewah (Glassmorphism) */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 16px 36px -12px rgba(15, 56, 112, 0.12);
+  }
+
+  /* Efek Kilau Cahaya pada Foto Kartu (Sheen / Light Reflection) */
+  .sheen-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sheen-wrapper::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -120%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(25deg);
+    transition: all 0.75s ease-out;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .group:hover .sheen-wrapper::after,
+  .sheen-wrapper:hover::after {
+    left: 170%;
+  }
+
+  /* Border Emas Berkilau untuk Menu Favorit */
+  .gold-shimmer-border {
+    background: linear-gradient(135deg, #F5B21B 0%, #0F3870 50%, #F5B21B 100%);
+    padding: 2px;
+    border-radius: 2rem;
+  }
 }
 
-/* ===== BARU: utilitas ===== */
+/* ========================================
+   UTILITAS
+======================================== */
+
 @layer utilities {
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-/* ===== BARU: hormati pengguna yang mematikan animasi ===== */
+/* ========================================
+   ANIMASI
+======================================== */
+
+@keyframes tr-up {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tr-imgin {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tr-blobin {
+  from {
+    opacity: 0;
+    transform: scale(0.85) rotate(-4deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tr-morph {
+  0%,
+  100% {
+    border-radius: 44px;
+  }
+
+  50% {
+    border-radius: 62px 36px 64px 40px;
+  }
+}
+
+@keyframes tr-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes tr-wob {
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+
+  50% {
+    transform: rotate(-3deg) scale(1.06);
+  }
+}
+
+@keyframes tr-bump {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.4) rotate(-6deg);
+  }
+  60% {
+    transform: scale(1.15) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes tr-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes tr-blob2 {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+
+  50% {
+    transform: translate(40px, 30px) rotate(25deg);
+    border-radius: 40% 60% 44% 56%;
+  }
+}
+
+/* Kelas animasi */
+.tr-anim-up {
+  animation: tr-up 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.tr-anim-imgin {
+  animation: tr-imgin 1s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.tr-anim-morph {
+  animation:
+    tr-blobin 0.9s 0.2s both,
+    tr-morph 8s 1.3s ease-in-out infinite;
+}
+
+.tr-anim-float {
+  animation: tr-float 5s ease-in-out infinite;
+}
+
+.tr-anim-wob {
+  animation: tr-wob 3s ease-in-out infinite;
+}
+
+.tr-anim-blob2 {
+  animation: tr-blob2 11s ease-in-out infinite;
+}
+
+.tr-anim-bump {
+  animation: tr-bump 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes tr-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 8px 20px -6px rgba(245, 178, 27, 0.55);
+  }
+  50% {
+    box-shadow: 0 12px 28px -4px rgba(245, 178, 27, 0.85);
+  }
+}
+
+.tr-glow {
+  animation: tr-pulse-glow 3s infinite ease-in-out;
+}
+
+@keyframes tr-pulse-ring {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 16px rgba(37, 211, 102, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+.tr-pulse-ring {
+  animation: tr-pulse-ring 2.8s infinite;
+}
+
+@keyframes tr-float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+.tr-anim-float-slow {
+  animation: tr-float-slow 6s ease-in-out infinite;
+}
+
+/* ========================================
+   REVEAL SAAT SCROLL
+======================================== */
+
+.tr-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.tr-reveal.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========================================
+   TEKS BERJALAN
+======================================== */
+
+.tr-marquee-track {
+  animation: tr-marquee 30s linear infinite;
+}
+
+.tr-marquee:hover .tr-marquee-track {
+  animation-play-state: paused;
+}
+
+/* ========================================
+   AKSESIBILITAS: REDUCED MOTION
+======================================== */
+
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .tr-reveal,
+  .tr-reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  .tr-anim-up,
+  .tr-anim-imgin,
+  .tr-anim-morph,
+  .tr-anim-float,
+  .tr-anim-wob,
+  .tr-anim-blob2,
+  .tr-anim-bump,
+  .tr-marquee-track {
+    animation: none !important;
   }
 }

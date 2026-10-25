@@ -1,6 +1,22 @@
+# dependensi dan hasil build
 node_modules
 dist
-.DS_Store
+dist-ssr
+
+# file rahasia (JANGAN di-upload ke GitHub)
 .env
 .env.*
 !.env.example
+*.local
+
+# log
+logs
+*.log
+npm-debug.log*
+
+# editor dan sistem
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.dbd

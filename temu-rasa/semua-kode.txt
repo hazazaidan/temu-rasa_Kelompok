@@ -1,0 +1,3476 @@
+===== C:\temu-rasa (1)\temu-rasa\src\components\Button.jsx
+import { Link } from 'react-router-dom'
+
+const styles = {
+  primary:
+    'bg-navy text-white shadow-card hover:bg-navy-dark hover:shadow-card-hover',
+  accent:
+    'bg-sun text-navy-dark shadow-sun hover:bg-sun-deep hover:text-white',
+  outline:
+    'border-2 border-navy/25 text-navy hover:border-navy hover:bg-navy/5',
+  // BARU: tombol tanpa latar, untuk aksi kecil (Lihat Semua, Batal)
+  ghost: 'text-navy hover:bg-navy/5',
+}
+
+// BARU: ukuran opsional. Default 'md' = ukuran lama (px-6 py-3 text-sm)
+const sizes = {
+  sm: 'px-4 py-2 text-xs',
+  md: 'px-6 py-3 text-sm',
+  lg: 'px-8 py-4 text-base',
+}
+
+export default function Button({
+  variant = 'primary',
+  size = 'md',
+  to,
+  className = '',
+  children,
+  ...rest
+}) {
+  const cls = `inline-flex items-center justify-center gap-2 rounded-full font-bold transition duration-200 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${sizes[size]} ${styles[variant]} ${className}`
+  if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>
+  return <button className={cls} {...rest}>{children}</button>
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\CaraPesan.jsx
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowRight, Soup, Coffee, Camera, MapPin, Star } from 'lucide-react'
+import Button from '../components/Button'
+import CaraPesan from '../components/CaraPesan'
+import FoodCard from '../components/FoodCard'
+import ErrorState from '../components/ErrorState'
+import Marquee from '../components/Marquee'
+import Reveal from '../components/Reveal'
+import { ProductSkeleton } from '../components/ProductSkeleton'
+import useProducts from '../hooks/useProducts'
+
+// Path foto dari public/img. Kalau ekstensi filemu .png / .webp, ganti di sini saja.
+const HERO_IMG = '/img/hero.jpg'
+const CAFE_IMG = '/img/cafe.jpg'
+
+const perks = [
+  { icon: Soup, label: 'Makanan Berat & Camilan' },
+  { icon: Coffee, label: 'Kopi & Minuman Kekinian' },
+  { icon: Camera, label: 'Suasana Nyaman & Instagramable' },
+]
+
+// jeda animasi masuk (ms), dipakai bersama class tr-anim-up
+const delay = (ms) => ({ animationDelay: `${ms}ms` })
+
+// Scroll halus ke section Lokasi (section-nya dibuat di langkah berikutnya)
+const goLokasi = () => document.getElementById('lokasi')?.scrollIntoView({ behavior: 'smooth' })
+
+// Tampilkan foto; kalau file tidak ketemu, jatuh ke emoji supaya layout tidak rusak
+function Photo({ src, alt, emoji, className = '', emojiClass = 'text-8xl' }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return (
+      <div className={`flex items-center justify-center bg-sun-soft ${className}`}>
+        <span role="img" aria-label={alt} className={emojiClass}>{emoji}</span>
+      </div>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className={`object-cover ${className}`}
+    />
+  )
+}
+
+export default function Home() {
+  const { products, loading, error, reload } = useProducts()
+
+  const favorites = products
+    .filter((p) => p.bestSeller || p.rating >= 4.7)
+    .slice(0, 4)
+
+  // menu paling banyak ulasannya, dipakai di kartu melayang pada hero
+  const top = products.length
+    ? products.reduce((a, b) => (b.reviews > a.reviews ? b : a))
+    : null
+
+  return (
+    <>
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        {/* blob kuning samar di kiri atas */}
+        <div
+          aria-hidden="true"
+          className="tr-anim-blob2 pointer-events-none absolute -left-28 top-[8%] h-80 w-80 rounded-blob bg-sun opacity-20"
+        />
+
+        <div className="container-page relative grid items-center gap-12 py-12 md:grid-cols-[1.05fr_0.95fr] md:py-20">
+          <div>
+            {/* tagline dibungkus supaya miringnya tidak hilang oleh animasi */}
+            <div className="tr-anim-up" style={delay(100)}>
+              <p className="tagline">Banyak Rasa, Satu Cerita.</p>
+            </div>
+            <h1
+              className="title-display tr-anim-up mt-3 text-[5.5rem] sm:text-[7rem] md:text-[8.5rem]"
+              style={delay(250)}
+            >
+              Temu<br />Rasa
+            </h1>
+            <p className="tr-anim-up mt-6 max-w-md text-lg leading-relaxed text-navy-dark/75" style={delay(400)}>
+              Tempat makan dan minum yang menggabungkan rasa tradisional dan modern, untuk setiap cerita di setiap suapan.
+            </p>
+            <div className="tr-anim-up mt-8 flex flex-wrap gap-3" style={delay(550)}>
+              <Button to="/menu" variant="accent" size="lg">
+                Lihat Menu <ArrowRight size={18} />
+              </Button>
+              <Button variant="outline" size="lg" onClick={goLokasi}>
+                Cari lokasi
+              </Button>
+            </div>
+            <ul className="tr-anim-up mt-10 flex flex-wrap gap-x-8 gap-y-4" style={delay(700)}>
+              {perks.map(({ icon: Icon, label }) => (
+                <li key={label} className="flex max-w-[10.5rem] items-center gap-3 text-sm font-semibold leading-snug text-navy-dark/80">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sun-soft text-navy">
+                    <Icon size={20} />
+                  </span>
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="tr-anim-imgin relative isolate mx-auto w-full max-w-md">
+            <div className="blob-sun tr-anim-morph -right-6 -top-6 h-[105%] w-[105%]" />
+            <Photo
+              src={HERO_IMG}
+              alt="Es kopi susu dan nasi ayam geprek khas Temu Rasa"
+              emoji="ðŸ§‹"
+              emojiClass="text-[9rem]"
+              className="aspect-[4/5] w-full rounded-t-[999px] rounded-b-[2.5rem] shadow-card-hover"
+            />
+
+            {/* badge bulat: luar = posisi miring, dalam = bergoyang */}
+            <span className="absolute -right-3 top-10 rotate-12">
+              <span className="tr-anim-wob flex h-24 w-24 items-center justify-center rounded-full bg-navy p-3 text-center font-display text-xs font-bold italic leading-tight text-sun shadow-card">
+                Good Food Good Mood
+              </span>
+            </span>
+
+            {/* coretan tangan di atas foto */}
+            <span className="absolute -top-9 left-[8%] hidden -rotate-3 sm:block">
+              <span
+                className="tr-anim-up block font-script text-2xl font-bold text-navy-light"
+                style={delay(1400)}
+              >
+                Nong krong jadi lebih berarti!
+              </span>
+            </span>
+
+            {/* kartu melayang: menu paling banyak diulas (data dari menu.json) */}
+            <div className="tr-anim-float absolute -left-2 bottom-6 rounded-2xl bg-white px-5 py-3.5 shadow-card-hover sm:-left-6">
+              <p className="font-display text-lg font-bold leading-tight text-navy">
+                {top?.name ?? 'Es Kopi Susu'}
+              </p>
+              <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-navy/60">
+                <Star size={12} className="fill-sun text-sun" />
+                {top?.rating ?? 4.9}, paling sering dipesan
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PITA TEKS BERJALAN */}
+      <Marquee />
+
+      {/* MENU FAVORIT */}
+      <section className="container-page py-10">
+        <Reveal className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-3xl font-black text-navy md:text-4xl">
+              <span className="scribble">Menu Favorit</span>
+            </h2>
+            <p className="mt-3 font-script text-2xl font-bold text-navy-light">Paling sering dipesan minggu ini</p>
+          </div>
+          <Link to="/menu" className="flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-bold text-navy transition-colors hover:bg-navy/5">
+            Lihat Semua <ArrowRight size={14} />
+          </Link>
+        </Reveal>
+
+        {/* 1. Loading */}
+        {loading && (
+          <div
+            role="status"
+            aria-label="Memuat menu favorit"
+            className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5"
+          >
+            {Array.from({ length: 4 }, (_, i) => (
+              <ProductSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
+        {/* 2. Error */}
+        {!loading && error && <ErrorState message={error} onRetry={reload} />}
+
+        {/* 3. Data tampil (kartu muncul bergantian) */}
+        {!loading && !error && favorites.length > 0 && (
+          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+            {favorites.map((p, i) => (
+              <Reveal key={p.id} delay={i * 90} className="h-full [&>article]:h-full">
+                <FoodCard product={p} badge={p.bestSeller ? 'Best Seller' : undefined} />
+              </Reveal>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* TEMPAT FAVORIT BUAT NONGKRONG */}
+      <section className="container-page py-10">
+        <Reveal className="relative isolate overflow-hidden rounded-[2rem] bg-navy text-white">
+          <div className="absolute -bottom-16 -left-10 -z-10 h-56 w-56 rounded-blob bg-sun/90" />
+          <div className="grid items-center gap-6 md:grid-cols-[1.2fr_0.8fr]">
+            <div className="p-8 md:p-12">
+              <MapPin size={34} className="text-sun" />
+              <h3 className="mt-4 font-display text-3xl font-black italic leading-tight md:text-4xl">
+                Tempat Favorit Buat Nongkrong
+              </h3>
+              <p className="mt-3 max-w-sm text-white/80">
+                Dari sarapan sampai malam, semua ada di Temu Rasa.
+              </p>
+              <p className="mt-4 font-script text-2xl font-bold text-sun">Cobain juga, yuk!</p>
+              <Button to="/menu" variant="accent" size="lg" className="mt-6">Pesan Sekarang</Button>
+            </div>
+            <div className="hidden h-full min-h-[18rem] md:block">
+              <Photo
+                src={CAFE_IMG}
+                alt="Suasana nongkrong di Temu Rasa"
+                emoji="â˜•"
+                className="h-full w-full rounded-l-[6rem]"
+              />
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* CARA PESAN */}
+      <CaraPesan />
+    </>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\CartModal.jsx
+import { useEffect } from 'react'
+import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { useCart } from '../context/CartContext'
+import { rupiah } from '../data/products'
+import { Thumb } from './FoodCard'
+import Button from './Button'
+
+export default function CartModal() {
+  const { items, subtotal, inc, dec, remove, cartOpen, setCartOpen } = useCart()
+  const close = () => setCartOpen(false)
+
+  // Tekan Esc = tutup keranjang
+  useEffect(() => {
+    if (!cartOpen) return
+    const onKey = (e) => e.key === 'Escape' && setCartOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [cartOpen, setCartOpen])
+
+  // Kunci scroll halaman di belakang saat keranjang terbuka
+  useEffect(() => {
+    if (!cartOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [cartOpen])
+
+  const handleRemove = (item) => {
+    remove(item.key)
+    toast(`${item.product.name} dihapus dari keranjang`)
+  }
+
+  return (
+    <div
+      aria-hidden={!cartOpen}
+      className={`fixed inset-0 z-[60] ${
+        cartOpen ? 'visible' : 'pointer-events-none invisible delay-300 [transition-property:visibility]'
+      }`}
+    >
+      <div
+        onClick={close}
+        className={`absolute inset-0 bg-navy-dark/50 transition-opacity duration-300 ${cartOpen ? 'opacity-100' : 'opacity-0'}`}
+      />
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Keranjang Belanja"
+        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-cream shadow-2xl transition-transform duration-300 ${
+          cartOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-navy/10 px-5 py-4">
+          <h2 className="font-display text-2xl font-black italic text-navy">Keranjang Belanja</h2>
+          <button
+            onClick={close}
+            aria-label="Tutup keranjang"
+            className="rounded-full p-2 text-navy transition-colors hover:bg-navy/5"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {items.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+            <span className="flex h-24 w-24 items-center justify-center rounded-full bg-sun-soft">
+              <ShoppingBag size={40} className="text-navy" />
+            </span>
+            <p className="font-display text-2xl font-black text-navy">Keranjangmu masih kosong</p>
+            <p className="font-script text-2xl font-bold text-navy-light">Pilih menu favoritmu dulu, yuk.</p>
+            <Button to="/menu" onClick={close} variant="accent" className="mt-3">Lihat Menu</Button>
+          </div>
+        ) : (
+          <>
+            <ul className="flex-1 space-y-3 overflow-y-auto px-5 py-5">
+              {items.map((i) => (
+                <li key={i.key} className="flex gap-3 rounded-3xl bg-white p-3 shadow-card">
+                  <Thumb p={i.product} size="text-3xl" className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl" />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-display text-base font-bold leading-tight text-navy-dark">{i.product.name}</p>
+                      <button
+                        onClick={() => handleRemove(i)}
+                        aria-label={`Hapus ${i.product.name}`}
+                        className="shrink-0 rounded-full p-1.5 text-navy/45 transition-colors hover:bg-chili/10 hover:text-chili"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    {i.variant && <p className="text-xs font-semibold text-navy/55">{i.variant}</p>}
+                    <div className="mt-auto flex items-center justify-between pt-2">
+                      <p className="font-extrabold text-navy">{rupiah(i.product.price)}</p>
+                      <div className="flex items-center rounded-full bg-cream p-0.5">
+                        <button
+                          onClick={() => dec(i.key)}
+                          aria-label="Kurangi"
+                          className="flex h-7 w-7 items-center justify-center rounded-full text-navy transition-colors hover:bg-white active:scale-95"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-6 text-center text-sm font-extrabold text-navy" aria-live="polite">{i.qty}</span>
+                        <button
+                          onClick={() => inc(i.key)}
+                          aria-label="Tambah"
+                          className="flex h-7 w-7 items-center justify-center rounded-full text-navy transition-colors hover:bg-white active:scale-95"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="space-y-3 rounded-t-[2rem] bg-white px-5 pb-6 pt-5 shadow-[0_-12px_30px_-18px_rgba(15,56,112,0.35)]">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-navy-dark/70">Subtotal</span>
+                <span className="text-2xl font-extrabold text-navy">{rupiah(subtotal)}</span>
+              </div>
+              <p className="text-xs text-navy/55">Ongkir dihitung saat checkout.</p>
+              <Button to="/checkout" onClick={close} variant="accent" size="lg" className="w-full">Checkout</Button>
+            </div>
+          </>
+        )}
+      </aside>
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\ErrorState.jsx
+import { WifiOff, RefreshCw } from 'lucide-react'
+import Button from './Button'
+
+export default function ErrorState({ message = 'Gagal memuat data. Coba lagi', onRetry }) {
+  return (
+    <div
+      role="alert"
+      className="mx-auto mt-16 flex max-w-sm flex-col items-center gap-3 rounded-[2rem] bg-white px-8 py-12 text-center shadow-card"
+    >
+      <span className="flex h-20 w-20 items-center justify-center rounded-full bg-sun-soft">
+        <WifiOff size={36} className="text-navy" />
+      </span>
+      <h2 className="font-display text-2xl font-black text-navy">Ups, ada masalah</h2>
+      <p className="text-sm text-navy-dark/65">{message}</p>
+      {onRetry && (
+        <Button className="mt-2 inline-flex items-center gap-2" onClick={onRetry}>
+          <RefreshCw size={16} /> Coba lagi
+        </Button>
+      )}
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Faq.jsx
+import Reveal from './Reveal'
+
+const faqs = [
+  {
+    q: 'Bisa pesan antar?',
+    a: 'Bisa. Ongkir mulai Rp8.000 dan pesanan sampai dalam 25â€“45 menit.',
+  },
+  {
+    q: 'Ada Wi-Fi dan colokan?',
+    a: 'Ada, nyaman untuk nugas atau ngobrol lama.',
+  },
+  {
+    q: 'Bayarnya bisa pakai apa?',
+    a: 'Transfer bank (BCA, BNI, BRI, Mandiri), e-wallet (OVO, GoPay, DANA, ShopeePay), dan bayar di tempat (COD).',
+  },
+  {
+    q: 'Bagaimana cara reservasi untuk rombongan?',
+    a: 'Isi formulir reservasi di atas (maksimal 12 orang). Untuk rombongan lebih besar, hubungi kami lewat halo@temurasa.id.',
+  },
+]
+
+export default function Faq() {
+  return (
+    <section id="faq" className="container-page scroll-mt-24 py-12 md:py-16">
+      <Reveal className="text-center">
+        <p className="flex items-center justify-center gap-3 text-xs font-extrabold uppercase tracking-[0.25em] text-navy">
+          <span aria-hidden="true" className="h-0.5 w-10 bg-navy" />
+          Tanya Jawab
+        </p>
+        <h2 className="mt-4 font-display text-4xl font-black text-navy md:text-6xl">
+          Pertanyaan yang <span className="scribble italic">sering ditanya</span>
+        </h2>
+      </Reveal>
+
+      <Reveal delay={120} className="mx-auto mt-12 max-w-3xl">
+        {faqs.map((f) => (
+          // `name` sama = hanya satu pertanyaan terbuka dalam satu waktu (browser modern)
+          <details key={f.q} name="faq" className="group border-b border-navy/10">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-6 font-display text-xl font-bold text-navy transition-colors hover:text-navy-light md:text-2xl [&::-webkit-details-marker]:hidden">
+              {f.q}
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sun-soft text-2xl font-normal leading-none text-navy transition-transform duration-300 group-open:rotate-45 group-open:bg-sun"
+              >
+                +
+              </span>
+            </summary>
+            <p className="tr-anim-up pb-6 pr-12 leading-relaxed text-navy-dark/75">{f.a}</p>
+          </details>
+        ))}
+      </Reveal>
+    </section>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\FoodCard.jsx
+import { Link } from 'react-router-dom'
+import { Star, Plus } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { useCart } from '../context/CartContext'
+import { rupiah } from '../data/products'
+
+export function Thumb({ p, className = '', size = 'text-6xl' }) {
+  return (
+    <div className={`flex items-center justify-center ${size} ${className}`} style={{ background: p.bg }}>
+      {p.image ? (
+        <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+      ) : (
+        <span role="img" aria-label={p.name}>{p.emoji}</span>
+      )}
+    </div>
+  )
+}
+
+// Label kecil di samping nama menu. Kunci = isi array `tags` di menu.json
+export const TAGS = {
+  pedas: { label: 'P', title: 'Pedas', cls: 'bg-sun text-navy-dark' },
+  vegetarian: { label: 'V', title: 'Vegetarian', cls: 'bg-green-100 text-green-800' },
+}
+
+// Prop opsional `badge`, contoh: <FoodCard product={p} badge="Best Seller" />
+export default function FoodCard({ product: p, badge }) {
+  const { addItem } = useCart()
+
+  const handleAdd = () => {
+    addItem(p, 1, p.variants?.[0])
+    toast.success(`${p.name} masuk keranjang`)
+  }
+
+  return (
+    <article className="group flex flex-col rounded-[1.75rem] bg-white p-2 shadow-card transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-card-hover">
+      <Link to={`/menu/${p.id}`} className="relative block overflow-hidden rounded-[1.35rem]">
+        <Thumb
+          p={p}
+          className="aspect-[4/3] transition-transform duration-500 group-hover:scale-105"
+        />
+        {badge && (
+          <span className="sticker absolute left-2 top-2 !text-[11px]">{badge}</span>
+        )}
+      </Link>
+
+      <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-3">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Link
+            to={`/menu/${p.id}`}
+            className="font-display text-lg font-bold leading-tight text-navy-dark transition-colors hover:text-navy-light"
+          >
+            {p.name}
+          </Link>
+          {(p.tags ?? []).map((t) =>
+            TAGS[t] ? (
+              <span
+                key={t}
+                role="img"
+                title={TAGS[t].title}
+                aria-label={TAGS[t].title}
+                className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${TAGS[t].cls}`}
+              >
+                {TAGS[t].label}
+              </span>
+            ) : null
+          )}
+        </div>
+        <p className="flex items-center gap-1 text-xs font-semibold text-navy/60">
+          <Star size={13} className="fill-sun text-sun" /> {p.rating}
+          <span className="font-medium text-navy/45">({p.reviews} ulasan)</span>
+        </p>
+        <div className="mt-auto flex items-center justify-between pt-3">
+          <span className="text-lg font-extrabold text-navy">{rupiah(p.price)}</span>
+          <button
+            onClick={handleAdd}
+            aria-label={`Tambah ${p.name} ke keranjang`}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-sun text-navy-dark shadow-sun transition hover:bg-sun-deep hover:text-white active:scale-95"
+          >
+            <Plus size={20} strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Footer.jsx
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Instagram, Mail } from 'lucide-react'
+import Button from './Button'
+import Reveal from './Reveal'
+import { outlets } from './Lokasi'
+
+// Link ke section di halaman Beranda (id harus sama dengan id section-nya)
+const explore = [
+  { label: 'Menu', to: '/menu' },
+  { label: 'Cara pesan', section: 'cara-pesan' },
+  { label: 'Lokasi', section: 'lokasi' },
+  { label: 'Ulasan', section: 'ulasan' },
+  { label: 'Tanya jawab', section: 'faq' },
+]
+const order = [
+  { label: 'Pesan online', to: '/menu' },
+  { label: 'Reservasi meja', section: 'reservasi' },
+  { label: 'Pesan antar', section: 'lokasi' },
+  { label: 'Pesanan saya', to: '/pesanan' },
+]
+
+const linkCls = 'text-navy-dark/75 transition-colors hover:text-navy hover:underline underline-offset-4'
+
+function Heading({ children }) {
+  return <h3 className="text-xs font-extrabold uppercase tracking-[0.25em] text-navy">{children}</h3>
+}
+
+export default function Footer() {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  // Scroll ke section di Beranda. Kalau sedang di halaman lain, pindah ke Beranda dulu.
+  const goSection = (id) => (e) => {
+    e.preventDefault()
+    const scroll = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    if (pathname === '/') {
+      scroll()
+    } else {
+      navigate('/')
+      setTimeout(scroll, 350)
+    }
+  }
+
+  const renderLink = (l) =>
+    l.to ? (
+      <Link to={l.to} className={linkCls}>{l.label}</Link>
+    ) : (
+      <a href={`/#${l.section}`} onClick={goSection(l.section)} className={linkCls}>{l.label}</a>
+    )
+
+  return (
+    <footer className="mt-16 border-t-8 border-sun bg-cream">
+      <Reveal className="container-page grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1.4fr]">
+        {/* Merek */}
+        <div>
+          <Link to="/" aria-label="Temu Rasa, ke beranda" className="inline-flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-navy font-display text-2xl font-black italic text-sun"
+            >
+              T
+            </span>
+            <span className="font-display text-[28px] font-bold leading-none tracking-tight text-navy">Temu Rasa</span>
+          </Link>
+          <p className="mt-5 max-w-xs leading-relaxed text-navy-dark/75">
+            Tempat makan dan minum di Bandung. Rasa tradisional, sentuhan modern, dan cerita di setiap suapan.
+          </p>
+        </div>
+
+        {/* Jelajahi */}
+        <nav aria-label="Jelajahi">
+          <Heading>Jelajahi</Heading>
+          <ul className="mt-5 space-y-3.5">
+            {explore.map((l) => (
+              <li key={l.label}>{renderLink(l)}</li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Pesan */}
+        <nav aria-label="Pesan">
+          <Heading>Pesan</Heading>
+          <ul className="mt-5 space-y-3.5">
+            {order.map((l) => (
+              <li key={l.label}>{renderLink(l)}</li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Kunjungi kami */}
+        <div>
+          <Heading>Kunjungi kami</Heading>
+          <ul className="mt-5 space-y-4">
+            {outlets.map((o) => (
+              <li key={o.id} className="leading-relaxed text-navy-dark/75">
+                <p className="font-bold text-navy-dark">{o.nama}</p>
+                <p>{o.alamat}</p>
+                <p>Setiap hari, {o.buka}â€“{o.tutup}</p>
+              </li>
+            ))}
+          </ul>
+          <Button to="/menu" variant="accent" size="lg" className="mt-6">
+            Mulai pesan
+          </Button>
+        </div>
+      </Reveal>
+
+      <div className="container-page flex flex-wrap items-center justify-between gap-3 border-t border-navy/10 py-6 text-sm text-navy-dark/70">
+        <p>Â© {new Date().getFullYear()} Temu Rasa. Makan enak, ke mana saja!</p>
+        <p className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <a href="mailto:halo@temurasa.id" className="inline-flex items-center gap-1.5 transition-colors hover:text-navy">
+            <Mail size={15} /> halo@temurasa.id
+          </a>
+          <span className="inline-flex items-center gap-1.5">
+            <Instagram size={15} /> @temurasa
+          </span>
+        </p>
+      </div>
+    </footer>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Lokasi.jsx
+import { ArrowUpRight, ShoppingBag } from 'lucide-react'
+import Button from './Button'
+import Reveal from './Reveal'
+
+// Data outlet. Dipakai juga oleh section Reservasi (langkah 13).
+export const outlets = [
+  { id: 'dago', nama: 'Dago', alamat: 'Jl. Ir. H. Juanda No. 12, Bandung', buka: '08.00', tutup: '22.00' },
+  { id: 'buah-batu', nama: 'Buah Batu', alamat: 'Jl. Buah Batu No. 88, Bandung', buka: '09.00', tutup: '23.00' },
+]
+
+const delivery = { buka: '08.00', tutup: '22.00', ongkir: 'Rp8.000', estimasi: '25â€“45 menit' }
+
+const toMinutes = (t) => {
+  const [h, m] = t.split('.').map(Number)
+  return h * 60 + m
+}
+// true kalau jam sekarang ada di antara jam buka dan tutup
+const isOpenNow = (buka, tutup) => {
+  const d = new Date()
+  const now = d.getHours() * 60 + d.getMinutes()
+  return now >= toMinutes(buka) && now < toMinutes(tutup)
+}
+
+const mapEmbed = (alamat) => `https://www.google.com/maps?q=${encodeURIComponent(alamat)}&output=embed`
+const mapLink = (alamat) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(alamat)}`
+
+function Status({ open }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold ${
+        open ? 'bg-green-100 text-green-800' : 'bg-navy/10 text-navy/70'
+      }`}
+    >
+      <span className={`h-2 w-2 rounded-full ${open ? 'bg-green-500' : 'bg-navy/40'}`} />
+      {open ? 'Buka sekarang' : 'Sedang tutup'}
+    </span>
+  )
+}
+
+export default function Lokasi() {
+  return (
+    <section id="lokasi" className="container-page scroll-mt-24 py-12 md:py-16">
+      <Reveal className="text-center">
+        <p className="flex items-center justify-center gap-3 text-xs font-extrabold uppercase tracking-[0.25em] text-navy">
+          <span aria-hidden="true" className="h-0.5 w-10 bg-navy" />
+          Lokasi
+        </p>
+        <h2 className="mt-4 font-display text-4xl font-black text-navy md:text-6xl">
+          Dua outlet, <span className="scribble italic">satu rasa</span>
+        </h2>
+        <p className="mx-auto mt-5 max-w-md text-navy-dark/70">
+          Mampir untuk makan di tempat, atau pesan antar langsung ke rumah.
+        </p>
+      </Reveal>
+
+      <div className="mt-12 grid gap-6 md:grid-cols-3">
+        {/* Dua outlet dengan peta */}
+        {outlets.map((o, i) => (
+          <Reveal key={o.id} delay={i * 120}>
+            <article className="flex h-full flex-col overflow-hidden rounded-[2rem] bg-sun-soft shadow-card transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-card-hover">
+              <div className="relative aspect-[4/3] bg-navy/5">
+                <iframe
+                  title={`Peta outlet ${o.nama}`}
+                  src={mapEmbed(o.alamat)}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="h-full w-full border-0"
+                />
+                <a
+                  href={mapLink(o.alamat)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-bold text-navy shadow-card"
+                >
+                  Buka di Maps <ArrowUpRight size={14} />
+                </a>
+              </div>
+
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="font-display text-2xl font-bold text-navy">{o.nama}</h3>
+                <p className="mt-2 text-navy-dark/75">{o.alamat}</p>
+                <a
+                  href={mapLink(o.alamat)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 w-fit font-bold text-navy underline underline-offset-4 hover:text-navy-light"
+                >
+                  Buka di Google Maps â†’
+                </a>
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-6">
+                  <p className="font-bold text-navy">
+                    Setiap hari, {o.buka}â€“{o.tutup}
+                  </p>
+                  <Status open={isOpenNow(o.buka, o.tutup)} />
+                </div>
+              </div>
+            </article>
+          </Reveal>
+        ))}
+
+        {/* Kartu pesan antar */}
+        <Reveal delay={240}>
+          <article className="flex h-full flex-col overflow-hidden rounded-[2rem] bg-sun-soft shadow-card transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-card-hover">
+            <div className="flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-sun-soft to-sun/50">
+              <ShoppingBag size={64} strokeWidth={1.5} className="tr-anim-float text-navy/55" />
+            </div>
+            <div className="flex flex-1 flex-col p-6">
+              <h3 className="font-display text-2xl font-bold text-navy">Pesan antar</h3>
+              <p className="mt-2 text-navy-dark/75">
+                Ongkir mulai {delivery.ongkir}. Sampai dalam {delivery.estimasi}.
+              </p>
+              <Button to="/menu" className="mt-4 w-fit" size="sm">
+                Pesan sekarang
+              </Button>
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-6">
+                <p className="font-bold text-navy">
+                  {isOpenNow(delivery.buka, delivery.tutup)
+                    ? `Buka sekarang, tutup ${delivery.tutup}`
+                    : `Tutup, buka lagi ${delivery.buka}`}
+                </p>
+              </div>
+            </div>
+          </article>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Marquee.jsx
+const words = ['Banyak Rasa', 'Satu Cerita', 'Good Food', 'Good Mood']
+
+// Satu rombongan teks. Dirender dua kali supaya animasi bisa berulang tanpa putus.
+function Group() {
+  return (
+    <div className="flex shrink-0 items-center gap-9 pr-9">
+      {[...words, ...words].map((w, i) => (
+        <span key={i} className="flex items-center gap-9">
+          <span>{w}</span>
+          <span aria-hidden="true">âœ¦</span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
+// Pita kuning dengan tulisan berjalan. Berhenti sebentar saat kursor diarahkan ke atasnya.
+export default function Marquee() {
+  return (
+    <div
+      aria-hidden="true"
+      className="tr-marquee overflow-hidden whitespace-nowrap bg-sun py-4 font-display text-2xl font-semibold italic text-navy"
+    >
+      <div className="tr-marquee-track flex w-max">
+        <Group />
+        <Group />
+      </div>
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Navbar.jsx
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Search, ShoppingBag, Menu, X, User } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { useCart } from '../context/CartContext'
+
+// Halaman biasa (pakai NavLink)
+const links = [
+  { to: '/', label: 'Beranda' },
+  { to: '/menu', label: 'Menu' },
+  { to: '/pesanan', label: 'Pesanan' },
+]
+// Bagian di dalam halaman Beranda (id section harus sama persis)
+const sections = [
+  { id: 'lokasi', label: 'Lokasi' },
+  { id: 'ulasan', label: 'Ulasan' },
+]
+
+function Logo({ small = false }) {
+  return (
+    <span className="flex items-center gap-3">
+      <span
+        aria-hidden="true"
+        className={`flex shrink-0 items-center justify-center rounded-full bg-navy font-display font-black italic text-sun ${
+          small ? 'h-9 w-9 text-xl' : 'h-11 w-11 text-2xl'
+        }`}
+      >
+        T
+      </span>
+      <span className={`font-display font-bold leading-none tracking-tight text-navy ${small ? 'text-2xl' : 'text-[28px]'}`}>
+        Temu Rasa
+      </span>
+    </span>
+  )
+}
+
+export default function Navbar() {
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
+  const [scrolled, setScrolled] = useState(false) // hanya untuk tampilan (bayangan saat scroll)
+  const { count, setCartOpen } = useCart()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const submit = (e) => {
+    e.preventDefault()
+    const keyword = q.trim() // sanitasi: buang spasi di awal/akhir
+    // kalau kosong, buka daftar menu lengkap (bukan ?q= kosong)
+    navigate(keyword ? `/menu?q=${encodeURIComponent(keyword)}` : '/menu')
+    setOpen(false)
+    setShowSearch(false)
+  }
+
+  // Scroll ke section di Beranda. Kalau sedang di halaman lain, pindah ke Beranda dulu.
+  const goSection = (id) => (e) => {
+    e.preventDefault()
+    setOpen(false)
+    const scroll = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    if (pathname === '/') {
+      scroll()
+    } else {
+      navigate('/')
+      setTimeout(scroll, 350)
+    }
+  }
+
+  // Tombol Masuk belum punya fungsi, beri respons supaya user tidak bingung
+  const handleLogin = () => {
+    setOpen(false)
+    toast('Fitur masuk akan segera hadir')
+  }
+
+  const linkCls = ({ isActive }) =>
+    `relative py-1 text-[15px] font-semibold transition-colors ${isActive ? 'text-navy' : 'text-navy/60 hover:text-navy'}`
+
+  return (
+    <header
+      className={`sticky top-0 z-40 border-b bg-cream/85 backdrop-blur-md transition-shadow duration-200 ${
+        scrolled
+          ? 'border-navy/10 shadow-[0_8px_24px_-14px_rgba(15,56,112,0.35)]'
+          : 'border-transparent'
+      }`}
+    >
+      <div className="container-page flex items-center justify-between gap-4 py-3">
+        <Link to="/" aria-label="Temu Rasa, ke beranda">
+          <Logo />
+        </Link>
+
+        <nav className="hidden items-center gap-7 lg:flex">
+          {links.map((l) => (
+            <NavLink key={l.to} to={l.to} end={l.to === '/'} className={linkCls}>
+              {({ isActive }) => (
+                <>
+                  {l.label}
+                  <span
+                    className={`absolute -bottom-0.5 left-0 h-[3px] rounded-full bg-sun transition-all duration-200 ${
+                      isActive ? 'w-full' : 'w-0'
+                    }`}
+                  />
+                </>
+              )}
+            </NavLink>
+          ))}
+          {sections.map((s) => (
+            <a key={s.id} href={`/#${s.id}`} onClick={goSection(s.id)} className={linkCls({ isActive: false })}>
+              {s.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <button
+            aria-label="Cari menu"
+            aria-expanded={showSearch}
+            onClick={() => setShowSearch((s) => !s)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-navy text-navy transition-colors hover:bg-navy/5"
+          >
+            <Search size={19} />
+          </button>
+
+          <button
+            onClick={handleLogin}
+            className="hidden items-center gap-2 rounded-full border-2 border-navy px-5 py-2.5 text-sm font-bold text-navy transition hover:bg-navy/5 active:translate-y-px sm:flex"
+          >
+            <User size={14} /> Masuk
+          </button>
+
+          <button
+            aria-label={`Keranjang, ${count} item`}
+            onClick={() => setCartOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-navy/15 bg-white py-1.5 pl-3.5 pr-1.5 text-sm font-bold text-navy shadow-card transition-colors hover:border-navy xl:pl-4"
+          >
+            <ShoppingBag size={18} />
+            <span className="hidden xl:inline">Keranjang</span>
+            <span
+              key={count}
+              className="tr-anim-bump flex h-8 min-w-8 items-center justify-center rounded-full bg-sun px-1.5 text-sm font-extrabold text-navy-dark"
+            >
+              {count}
+            </span>
+          </button>
+
+          <button
+            aria-label="Buka menu"
+            onClick={() => setOpen(true)}
+            className="rounded-full p-2.5 text-navy hover:bg-navy/5 lg:hidden"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
+      </div>
+
+      {showSearch && (
+        <form onSubmit={submit} className="container-page border-t border-navy/10 py-3">
+          <input
+            autoFocus
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Cari menu"
+            placeholder="Cari nasi, kopi, es teh..."
+            className="input"
+          />
+        </form>
+      )}
+
+      {/* Drawer mobile */}
+      <div
+        aria-hidden={!open}
+        className={`fixed inset-0 z-50 lg:hidden ${
+          open ? 'visible' : 'pointer-events-none invisible delay-300 [transition-property:visibility]'
+        }`}
+      >
+        <div
+          onClick={() => setOpen(false)}
+          className={`absolute inset-0 bg-navy-dark/50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
+        />
+        <aside
+          className={`absolute right-0 top-0 flex h-full w-72 flex-col bg-cream p-6 shadow-2xl transition-transform duration-300 ${
+            open ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="mb-8 flex items-center justify-between">
+            <Logo small />
+            <button aria-label="Tutup menu" onClick={() => setOpen(false)} className="rounded-full p-2 hover:bg-navy/5">
+              <X size={22} />
+            </button>
+          </div>
+          <nav className="flex flex-col gap-1">
+            {links.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                end={l.to === '/'}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `rounded-2xl px-4 py-3 text-lg font-bold transition-colors ${
+                    isActive ? 'bg-sun-soft text-navy' : 'text-navy/60 hover:bg-navy/5'
+                  }`
+                }
+              >
+                {l.label}
+              </NavLink>
+            ))}
+            {sections.map((s) => (
+              <a
+                key={s.id}
+                href={`/#${s.id}`}
+                onClick={goSection(s.id)}
+                className="rounded-2xl px-4 py-3 text-lg font-bold text-navy/60 transition-colors hover:bg-navy/5"
+              >
+                {s.label}
+              </a>
+            ))}
+          </nav>
+          <p className="tagline mt-8 px-4">Banyak rasa, satu cerita.</p>
+          <button
+            onClick={handleLogin}
+            className="mt-auto rounded-full bg-navy py-3.5 font-bold text-white shadow-card transition hover:bg-navy-dark"
+          >
+            Masuk
+          </button>
+        </aside>
+      </div>
+    </header>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\ProductSkeleton.jsx
+export function ProductSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex animate-pulse flex-col rounded-[1.75rem] bg-white p-2 shadow-card"
+    >
+      <div className="aspect-[4/3] w-full rounded-[1.35rem] bg-sun-soft" />
+      <div className="flex flex-col gap-2 px-3 pb-3 pt-3">
+        <div className="h-5 w-3/4 rounded-full bg-sun-soft" />
+        <div className="h-3 w-1/2 rounded-full bg-sun-soft" />
+        <div className="flex items-center justify-between pt-3">
+          <div className="h-6 w-1/3 rounded-full bg-sun-soft" />
+          <div className="h-10 w-10 rounded-full bg-sun-soft" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function ProductSkeletonGrid({ count = 8 }) {
+  return (
+    <div
+      role="status"
+      aria-label="Memuat menu"
+      className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4"
+    >
+      {Array.from({ length: count }, (_, i) => (
+        <ProductSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Reservasi.jsx
+import { useMemo, useState } from 'react'
+import { CheckCircle2, Loader2 } from 'lucide-react'
+import toast from 'react-hot-toast'
+import Button from './Button'
+import Reveal from './Reveal'
+import { outlets } from './Lokasi'
+
+// Opsional: isi VITE_RESERVATION_URL di .env.local (Formspree / MockAPI) supaya reservasi dikirim ke layanan.
+// Kalau kosong, reservasi hanya disimpan di localStorage.
+const RESERVATION_URL = import.meta.env.VITE_RESERVATION_URL
+const STORAGE_KEY = 'temurasa-reservations'
+
+// idx = nilai Date.getDay() (0 = Minggu)
+const DAYS = [
+  { nama: 'Senin', idx: 1 },
+  { nama: 'Selasa', idx: 2 },
+  { nama: 'Rabu', idx: 3 },
+  { nama: 'Kamis', idx: 4 },
+  { nama: 'Jumat', idx: 5 },
+  { nama: 'Sabtu', idx: 6 },
+  { nama: 'Minggu', idx: 0 },
+]
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+const pad = (n) => String(n).padStart(2, '0')
+const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+const toMin = (t) => {
+  const [h, m] = t.split('.').map(Number)
+  return h * 60 + m
+}
+const cleanPhone = (v) => v.replace(/[\s-]/g, '')
+
+const minDate = () => toISO(new Date())
+const maxDate = () => {
+  const d = new Date()
+  d.setDate(d.getDate() + 60)
+  return toISO(d)
+}
+
+// Pilihan jam: tiap 1 jam, dari jam buka sampai 1 jam sebelum tutup.
+// Kalau tanggalnya hari ini, jam yang sudah lewat (atau kurang dari 30 menit lagi) dibuang.
+function slotsFor(outlet, dateISO) {
+  if (!outlet) return []
+  const now = new Date()
+  const isToday = dateISO === toISO(now)
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  const out = []
+  for (let m = toMin(outlet.buka); m <= toMin(outlet.tutup) - 60; m += 60) {
+    if (isToday && m < nowMin + 30) continue
+    out.push(`${pad(Math.floor(m / 60))}.${pad(m % 60)}`)
+  }
+  return out
+}
+
+// Urutan ini juga dipakai untuk memfokuskan kolom pertama yang salah
+const FIELD_ORDER = ['nama', 'hp', 'outlet', 'tanggal', 'jam', 'jumlah']
+
+function validate(f) {
+  const e = {}
+  const outlet = outlets.find((o) => o.id === f.outlet)
+
+  if (f.nama.trim().length < 2) e.nama = 'Nama minimal 2 huruf'
+  if (!/^(\+62|62|0)8\d{8,11}$/.test(cleanPhone(f.hp))) e.hp = 'Nomor HP tidak valid, contoh: 081234567890'
+  if (!outlet) e.outlet = 'Pilih outlet'
+
+  if (!f.tanggal) e.tanggal = 'Pilih tanggal'
+  else if (f.tanggal < minDate()) e.tanggal = 'Tanggal sudah lewat'
+  else if (f.tanggal > maxDate()) e.tanggal = 'Reservasi maksimal 60 hari ke depan'
+
+  if (!f.jam) e.jam = 'Pilih jam'
+  else if (outlet && !slotsFor(outlet, f.tanggal).includes(f.jam)) e.jam = 'Jam tidak tersedia, pilih jam lain'
+
+  const n = Number(f.jumlah)
+  if (!Number.isInteger(n) || n < 1 || n > 12) e.jumlah = 'Jumlah 1 sampai 12 orang'
+
+  return e
+}
+
+async function sendReservation(payload) {
+  if (!RESERVATION_URL) {
+    await wait(900) // jeda singkat supaya state "Mengirim..." terlihat
+    return
+  }
+  const res = await fetch(RESERVATION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+}
+
+function saveReservation(r) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    const list = raw ? JSON.parse(raw) : []
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([r, ...(Array.isArray(list) ? list : [])]))
+  } catch {
+    /* abaikan: storage penuh atau diblokir */
+  }
+}
+
+const formatTanggal = (iso) =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+function Field({ label, id, error, hint, children }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-bold text-navy-dark">{label}</label>
+      {children}
+      {hint && !error && <p className="mt-1.5 text-xs text-navy/55">{hint}</p>}
+      {error && (
+        <p id={`${id}-err`} role="alert" className="mt-1.5 text-xs font-semibold text-chili">{error}</p>
+      )}
+    </div>
+  )
+}
+
+const emptyForm = () => ({
+  nama: '',
+  hp: '',
+  outlet: outlets[0].id,
+  tanggal: '',
+  jam: '',
+  jumlah: '2',
+  catatan: '',
+})
+
+export default function Reservasi() {
+  const [form, setForm] = useState(emptyForm)
+  const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(null)
+
+  const todayIdx = new Date().getDay()
+  const outlet = outlets.find((o) => o.id === form.outlet)
+  const slots = useMemo(() => slotsFor(outlet, form.tanggal), [outlet, form.tanggal])
+
+  // ketik ulang = pesan error kolom itu hilang. Ganti outlet/tanggal = jam dipilih ulang.
+  const set = (k) => (e) => {
+    const value = e.target.value
+    setForm((f) => ({ ...f, [k]: value, ...(k === 'outlet' || k === 'tanggal' ? { jam: '' } : {}) }))
+    setErrors((er) => ({ ...er, [k]: undefined, ...(k === 'outlet' || k === 'tanggal' ? { jam: undefined } : {}) }))
+  }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    if (submitting) return // cegah klik ganda
+
+    const errs = validate(form)
+    setErrors(errs)
+    const firstBad = FIELD_ORDER.find((k) => errs[k])
+    if (firstBad) {
+      toast.error('Periksa lagi data reservasi')
+      document.getElementById(`rsv-${firstBad}`)?.focus()
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const payload = {
+        id: `RSV-${Date.now().toString(36).toUpperCase().slice(-5)}`,
+        nama: form.nama.trim(),
+        hp: cleanPhone(form.hp),
+        outlet: outlet.nama,
+        tanggal: form.tanggal,
+        jam: form.jam,
+        jumlah: Number(form.jumlah),
+        catatan: form.catatan.trim(),
+        dibuat: new Date().toISOString(),
+      }
+      await sendReservation(payload)
+      saveReservation(payload)
+      setDone(payload)
+      setForm(emptyForm())
+      toast.success('Reservasi berhasil dicatat!')
+    } catch {
+      toast.error('Reservasi gagal dikirim. Coba lagi sebentar lagi.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const cls = (k) => `input !bg-cream ${errors[k] ? '!border-chili !ring-chili/20' : ''}`
+  const a11y = (k) => ({ 'aria-invalid': !!errors[k], 'aria-describedby': errors[k] ? `rsv-${k}-err` : undefined })
+
+  return (
+    <section id="reservasi" className="container-page scroll-mt-24 py-12 md:py-16">
+      <Reveal className="text-center">
+        <p className="flex items-center justify-center gap-3 text-xs font-extrabold uppercase tracking-[0.25em] text-navy">
+          <span aria-hidden="true" className="h-0.5 w-10 bg-navy" />
+          Jam Buka & Reservasi
+        </p>
+        <h2 className="mt-4 font-display text-4xl font-black text-navy md:text-6xl">
+          Siapkan <span className="scribble italic">mejamu</span>
+        </h2>
+        <p className="mx-auto mt-5 max-w-md text-navy-dark/70">
+          Lihat jam buka kedua outlet, lalu pesan meja lewat formulir di bawah.
+        </p>
+      </Reveal>
+
+      <div className="mt-12 grid items-start gap-6 md:grid-cols-2 md:gap-8">
+        {/* Jam buka */}
+        <Reveal>
+          <div className="rounded-[2rem] bg-white p-6 shadow-card md:p-9">
+            <h3 className="font-display text-3xl font-bold text-navy">Jam buka</h3>
+            <table className="mt-6 w-full text-left text-sm">
+              <thead>
+                <tr className="text-navy/60">
+                  <th className="px-3 pb-3 font-semibold">Hari</th>
+                  {outlets.map((o) => (
+                    <th key={o.id} className="px-3 pb-3 font-semibold">{o.nama}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {DAYS.map((d) => {
+                  const isToday = d.idx === todayIdx
+                  return (
+                    <tr
+                      key={d.nama}
+                      className={
+                        isToday
+                          ? 'bg-sun font-extrabold text-navy-dark [&>td:first-child]:rounded-l-xl [&>td:last-child]:rounded-r-xl'
+                          : 'border-t border-navy/10 text-navy-dark/80'
+                      }
+                    >
+                      <td className="px-3 py-3.5">
+                        {d.nama}
+                        {isToday && ' (hari ini)'}
+                      </td>
+                      {outlets.map((o) => (
+                        <td key={o.id} className="px-3 py-3.5">
+                          {o.buka}â€“{o.tutup}
+                        </td>
+                      ))}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Reveal>
+
+        {/* Form reservasi */}
+        <Reveal delay={120}>
+          <div className="rounded-[2rem] bg-white p-6 shadow-card md:p-9">
+            <h3 className="font-display text-3xl font-bold text-navy">Reservasi meja</h3>
+
+            {done ? (
+              <div className="mt-6 text-center" role="status">
+                <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-sun shadow-sun">
+                  <CheckCircle2 size={44} className="text-navy-dark" />
+                </span>
+                <p className="mt-4 font-display text-2xl font-black text-navy">Meja kamu sudah dicatat!</p>
+                <dl className="mt-5 space-y-2 rounded-2xl bg-sun-soft p-4 text-left text-sm text-navy-dark">
+                  <div className="flex justify-between gap-3"><dt className="font-bold">Kode</dt><dd>{done.id}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="font-bold">Atas nama</dt><dd>{done.nama}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="font-bold">Outlet</dt><dd>{done.outlet}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="font-bold">Waktu</dt><dd className="text-right">{formatTanggal(done.tanggal)}, {done.jam}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="font-bold">Jumlah</dt><dd>{done.jumlah} orang</dd></div>
+                </dl>
+                <Button variant="outline" className="mt-6" onClick={() => setDone(null)}>
+                  Buat reservasi lain
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={submit} noValidate className="mt-6 space-y-4">
+                <Field label="Nama" id="rsv-nama" error={errors.nama}>
+                  <input
+                    id="rsv-nama"
+                    className={cls('nama')}
+                    placeholder="Nama kamu"
+                    value={form.nama}
+                    onChange={set('nama')}
+                    autoComplete="name"
+                    maxLength={60}
+                    {...a11y('nama')}
+                  />
+                </Field>
+
+                <Field label="Nomor HP / WhatsApp" id="rsv-hp" error={errors.hp}>
+                  <input
+                    id="rsv-hp"
+                    className={cls('hp')}
+                    placeholder="081234567890"
+                    value={form.hp}
+                    onChange={set('hp')}
+                    autoComplete="tel"
+                    inputMode="tel"
+                    maxLength={20}
+                    {...a11y('hp')}
+                  />
+                </Field>
+
+                <Field label="Outlet" id="rsv-outlet" error={errors.outlet}>
+                  <select id="rsv-outlet" className={cls('outlet')} value={form.outlet} onChange={set('outlet')} {...a11y('outlet')}>
+                    {outlets.map((o) => (
+                      <option key={o.id} value={o.id}>{o.nama}</option>
+                    ))}
+                  </select>
+                </Field>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Tanggal" id="rsv-tanggal" error={errors.tanggal}>
+                    <input
+                      id="rsv-tanggal"
+                      type="date"
+                      className={cls('tanggal')}
+                      value={form.tanggal}
+                      min={minDate()}
+                      max={maxDate()}
+                      onChange={set('tanggal')}
+                      {...a11y('tanggal')}
+                    />
+                  </Field>
+
+                  <Field
+                    label="Jam"
+                    id="rsv-jam"
+                    error={errors.jam}
+                    hint={form.tanggal && slots.length === 0 ? 'Tidak ada jam tersisa di tanggal ini.' : undefined}
+                  >
+                    <select
+                      id="rsv-jam"
+                      className={cls('jam')}
+                      value={form.jam}
+                      onChange={set('jam')}
+                      disabled={slots.length === 0 && !!form.tanggal}
+                      {...a11y('jam')}
+                    >
+                      <option value="">Pilih jam</option>
+                      {slots.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+
+                <Field label="Jumlah orang" id="rsv-jumlah" error={errors.jumlah}>
+                  <select id="rsv-jumlah" className={cls('jumlah')} value={form.jumlah} onChange={set('jumlah')} {...a11y('jumlah')}>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>{n} orang</option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Catatan (opsional)" id="rsv-catatan">
+                  <textarea
+                    id="rsv-catatan"
+                    rows={2}
+                    className={cls('catatan')}
+                    placeholder="Mis. dekat jendela, ada kursi bayi"
+                    value={form.catatan}
+                    onChange={set('catatan')}
+                    maxLength={200}
+                  />
+                </Field>
+
+                <Button type="submit" variant="accent" size="lg" className="w-full" disabled={submitting} aria-busy={submitting}>
+                  {submitting ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 size={18} className="animate-spin" /> Mengirim...
+                    </span>
+                  ) : (
+                    'Pesan meja'
+                  )}
+                </Button>
+              </form>
+            )}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Reveal.jsx
+import { useEffect, useRef, useState } from 'react'
+
+// Bungkus elemen apa pun, nanti muncul halus saat di-scroll ke layar.
+// Contoh: <Reveal delay={150}> ... </Reveal>
+export default function Reveal({ as: Tag = 'div', delay = 0, className = '', children, ...rest }) {
+  const ref = useRef(null)
+  const [shown, setShown] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    // browser lama tanpa IntersectionObserver: langsung tampilkan
+    if (!('IntersectionObserver' in window)) {
+      setShown(true)
+      return
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true)
+          io.disconnect() // cukup sekali, tidak diulang saat scroll balik
+        }
+      },
+      { threshold: 0.15 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  return (
+    <Tag
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`tr-reveal ${shown ? 'is-in' : ''} ${className}`}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\ScrollProgress.jsx
+import { useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
+
+// Garis kuning tipis di paling atas layar, memanjang sesuai seberapa jauh halaman di-scroll.
+export default function ScrollProgress() {
+  const bar = useRef(null)
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0
+      if (bar.current) bar.current.style.transform = `scaleX(${p})`
+    }
+    update()
+    // tinggi halaman berubah setelah pindah route atau data selesai dimuat
+    const t = setTimeout(update, 120)
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [pathname])
+
+  return (
+    <div
+      ref={bar}
+      aria-hidden="true"
+      style={{ transform: 'scaleX(0)' }}
+      className="pointer-events-none fixed left-0 top-0 z-[70] h-[3px] w-full origin-left bg-sun"
+    />
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Suasana.jsx
+import { useState } from 'react'
+import Reveal from './Reveal'
+
+// Ganti `src` kalau ekstensi atau pilihan fotomu berbeda (mis. '/img/cafe.png').
+const tiles = [
+  { label: 'Ruang makan', src: '/img/cafe.jpg', emoji: 'â˜•', bg: '#FDE7C8', big: true },
+  { label: 'Bar kopi', src: '/img/drink1.jpg', emoji: 'ðŸ§‹', bg: '#EAD7C3' },
+  { label: 'Dapur terbuka', src: '/img/food1.jpg', emoji: 'ðŸ›', bg: '#FFE9A8' },
+  { label: 'Sudut nongkrong', src: '/img/side.jpg', emoji: 'ðŸª´', bg: '#DCE8C6' },
+  { label: 'Menu spesial', src: '/img/detail.jpg', emoji: 'ðŸŸ', bg: '#FFD9C4' },
+]
+
+function Tile({ t }) {
+  const [failed, setFailed] = useState(false)
+
+  return (
+    <figure
+      className="group relative h-full overflow-hidden rounded-[2rem] shadow-card"
+      style={{ background: t.bg }}
+    >
+      {failed ? (
+        <div className="flex h-full w-full items-center justify-center">
+          <span role="img" aria-label={t.label} className={t.big ? 'text-[9rem]' : 'text-7xl'}>
+            {t.emoji}
+          </span>
+        </div>
+      ) : (
+        <img
+          src={t.src}
+          alt={t.label}
+          loading="lazy"
+          onError={() => setFailed(true)}
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+      )}
+      <figcaption className="absolute bottom-4 left-4 rounded-full bg-cream px-4 py-2 font-display text-base font-bold text-navy shadow-card md:text-lg">
+        {t.label}
+      </figcaption>
+    </figure>
+  )
+}
+
+export default function Suasana() {
+  return (
+    <section id="suasana" className="container-page scroll-mt-24 py-12 md:py-16">
+      <Reveal className="text-center">
+        <p className="flex items-center justify-center gap-3 text-xs font-extrabold uppercase tracking-[0.25em] text-navy">
+          <span aria-hidden="true" className="h-0.5 w-10 bg-navy" />
+          Galeri
+        </p>
+        <h2 className="mt-4 font-display text-4xl font-black text-navy md:text-6xl">
+          Suasana <span className="scribble italic">kami</span>
+        </h2>
+      </Reveal>
+
+      {/* Mosaik: 1 foto besar di kiri (2x2), 4 foto kecil di kanan */}
+      <div className="mt-12 grid auto-rows-[10rem] grid-cols-2 gap-4 sm:auto-rows-[13rem] md:auto-rows-[16rem] md:grid-cols-4 md:gap-5">
+        {tiles.map((t, i) => (
+          <Reveal
+            key={t.label}
+            delay={i * 90}
+            className={`h-full ${t.big ? 'col-span-2 row-span-2' : ''}`}
+          >
+            <Tile t={t} />
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\components\Ulasan.jsx
+import { useMemo, useState } from 'react'
+import { Loader2, Quote, Star } from 'lucide-react'
+import toast from 'react-hot-toast'
+import Button from './Button'
+import Reveal from './Reveal'
+
+// Opsional: isi VITE_REVIEW_URL di .env.local (Formspree / MockAPI) supaya ulasan dikirim ke layanan.
+// Kalau kosong, ulasan hanya disimpan di localStorage.
+const REVIEW_URL = import.meta.env.VITE_REVIEW_URL
+const STORAGE_KEY = 'temurasa-reviews'
+const MAX_SHOWN = 6
+
+// Ulasan contoh (selalu tampil). Ulasan buatan pengunjung disimpan terpisah di localStorage.
+const seedReviews = [
+  { id: 's1', nama: 'Nadia', peran: 'Mahasiswi', rating: 5, teks: 'Geprek-nya pedas pas, es kopi susunya cocok buat nugas seharian.' },
+  { id: 's2', nama: 'Rizky', peran: 'Pelanggan Dago', rating: 5, teks: 'Rendangnya empuk banget dan bumbunya meresap. Porsinya pas, harganya bersahabat.' },
+  { id: 's3', nama: 'Salsa', peran: 'Pekerja kantoran', rating: 4, teks: 'Suasananya nyaman buat ngobrol lama. Pesan antar cepat, sampai kurang dari 30 menit.' },
+]
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+const clean = (v) => v.replace(/\s+/g, ' ').trim() // sanitasi: buang spasi berlebih
+
+const loadReviews = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    const data = raw ? JSON.parse(raw) : []
+    return Array.isArray(data) ? data : []
+  } catch {
+    return []
+  }
+}
+const saveReviews = (list) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+  } catch {
+    /* abaikan: storage penuh atau diblokir */
+  }
+}
+
+async function sendReview(payload) {
+  if (!REVIEW_URL) {
+    await wait(900) // jeda singkat supaya state "Mengirim..." terlihat
+    return
+  }
+  const res = await fetch(REVIEW_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+}
+
+// Urutan ini dipakai untuk memfokuskan kolom pertama yang salah
+const FIELD_ORDER = ['nama', 'rating', 'teks']
+
+function validate(f) {
+  const e = {}
+  const nama = clean(f.nama)
+  const peran = clean(f.peran)
+  const teks = clean(f.teks)
+
+  if (nama.length < 2) e.nama = 'Nama minimal 2 huruf'
+  else if (nama.length > 40) e.nama = 'Nama maksimal 40 karakter'
+
+  if (peran.length > 30) e.peran = 'Maksimal 30 karakter'
+
+  if (!Number.isInteger(f.rating) || f.rating < 1 || f.rating > 5) e.rating = 'Pilih rating bintang'
+
+  if (teks.length < 10) e.teks = 'Ulasan minimal 10 karakter'
+  else if (teks.length > 200) e.teks = 'Ulasan maksimal 200 karakter'
+
+  return e
+}
+
+const fmtAvg = (n) => n.toFixed(1).replace('.', ',')
+
+// Deretan bintang tampilan saja (bukan input)
+function Stars({ value, size = 18 }) {
+  return (
+    <span className="inline-flex gap-0.5" role="img" aria-label={`${value} dari 5 bintang`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          size={size}
+          className={n <= value ? 'fill-sun text-sun' : 'text-sun/40'}
+        />
+      ))}
+    </span>
+  )
+}
+
+// Input rating: 5 bintang yang bisa diklik
+function RatingInput({ value, onChange, invalid }) {
+  const [hover, setHover] = useState(0)
+  const shown = hover || value
+  return (
+    <div
+      role="group"
+      aria-labelledby="rv-rating-label"
+      className="flex gap-1"
+      onMouseLeave={() => setHover(0)}
+    >
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          id={n === 1 ? 'rv-rating' : undefined}
+          type="button"
+          aria-label={`Beri ${n} bintang`}
+          aria-pressed={value === n}
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHover(n)}
+          className={`rounded-lg p-1 transition-transform hover:scale-110 active:scale-95 ${
+            invalid ? 'bg-chili/10' : ''
+          }`}
+        >
+          <Star size={30} className={n <= shown ? 'fill-sun text-sun' : 'text-sun/40'} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function Field({ label, id, error, hint, children }) {
+  return (
+    <div>
+      <label id={`${id}-label`} htmlFor={id} className="mb-1.5 block text-sm font-bold text-navy-dark">
+        {label}
+      </label>
+      {children}
+      {hint && !error && <p className="mt-1.5 text-xs text-navy/55">{hint}</p>}
+      {error && (
+        <p id={`${id}-err`} role="alert" className="mt-1.5 text-xs font-semibold text-chili">{error}</p>
+      )}
+    </div>
+  )
+}
+
+const emptyForm = () => ({ nama: '', peran: '', rating: 0, teks: '' })
+
+export default function Ulasan() {
+  const [mine, setMine] = useState(loadReviews) // ulasan buatan pengunjung
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState(emptyForm)
+  const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+
+  const all = useMemo(() => [...mine, ...seedReviews], [mine])
+  const shown = all.slice(0, MAX_SHOWN)
+  const avg = all.reduce((s, r) => s + r.rating, 0) / all.length
+
+  const set = (k) => (e) => {
+    const value = e.target.value
+    setForm((f) => ({ ...f, [k]: value }))
+    setErrors((er) => ({ ...er, [k]: undefined }))
+  }
+
+  const openForm = () => {
+    setOpen(true)
+    // tunggu form tampil, lalu fokus ke kolom pertama
+    setTimeout(() => document.getElementById('rv-nama')?.focus(), 50)
+  }
+
+  const closeForm = () => {
+    setOpen(false)
+    setErrors({})
+  }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    if (submitting) return // cegah klik ganda
+
+    const errs = validate(form)
+    setErrors(errs)
+    const firstBad = FIELD_ORDER.find((k) => errs[k])
+    if (firstBad) {
+      toast.error('Periksa lagi data ulasan')
+      document.getElementById(firstBad === 'rating' ? 'rv-rating' : `rv-${firstBad}`)?.focus()
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const review = {
+        id: `u-${Date.now()}`,
+        nama: clean(form.nama),
+        peran: clean(form.peran) || 'Pelanggan',
+        rating: form.rating,
+        teks: clean(form.teks),
+        baru: true,
+      }
+      await sendReview(review)
+      const next = [review, ...mine]
+      setMine(next)
+      saveReviews(next)
+      setForm(emptyForm())
+      setOpen(false)
+      toast.success('Terima kasih! Ulasanmu sudah masuk.')
+    } catch {
+      toast.error('Ulasan gagal dikirim. Coba lagi sebentar lagi.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const cls = (k) => `input ${errors[k] ? '!border-chili !ring-chili/20' : ''}`
+  const a11y = (k) => ({ 'aria-invalid': !!errors[k], 'aria-describedby': errors[k] ? `rv-${k}-err` : undefined })
+
+  return (
+    <section id="ulasan" className="container-page scroll-mt-24 py-12 md:py-16">
+      <Reveal className="text-center">
+        <p className="flex items-center justify-center gap-3 text-xs font-extrabold uppercase tracking-[0.25em] text-navy">
+          <span aria-hidden="true" className="h-0.5 w-10 bg-navy" />
+          Kata Mereka
+        </p>
+        <h2 className="mt-4 font-display text-4xl font-black text-navy md:text-6xl">
+          Disukai <span className="scribble italic">pelanggan</span> kami
+        </h2>
+        <p className="mt-5 text-navy-dark/70">
+          {fmtAvg(avg)} dari 5, dari {all.length} ulasan
+        </p>
+      </Reveal>
+
+      <div className="mt-12 grid gap-5 md:grid-cols-3">
+        {shown.map((r, i) => (
+          <Reveal key={r.id} delay={(i % 3) * 100}>
+            <figure className="relative flex h-full flex-col rounded-[2rem] bg-white p-7 shadow-card transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-card-hover">
+              <Quote size={34} aria-hidden="true" className="absolute right-6 top-6 fill-sun text-sun" />
+              <div className="flex items-center gap-3">
+                <Stars value={r.rating} />
+                {r.baru && (
+                  <span className="rounded-full bg-sun-soft px-2.5 py-0.5 text-[11px] font-extrabold text-navy">Baru</span>
+                )}
+              </div>
+              <blockquote className="mt-5 flex-1 leading-relaxed text-navy-dark/80">
+                â€œ{r.teks}â€
+              </blockquote>
+              <figcaption className="mt-7 flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sun-soft font-display text-xl font-black text-navy"
+                >
+                  {r.nama.charAt(0).toUpperCase()}
+                </span>
+                <span>
+                  <span className="block font-display text-lg font-bold leading-tight text-navy">{r.nama}</span>
+                  <span className="text-sm text-navy/60">{r.peran}</span>
+                </span>
+              </figcaption>
+            </figure>
+          </Reveal>
+        ))}
+      </div>
+
+      {/* Tombol / form tulis ulasan */}
+      <div className="mt-10 flex justify-center">
+        {!open && (
+          <Button variant="outline" size="lg" onClick={openForm}>
+            Tulis ulasan
+          </Button>
+        )}
+      </div>
+
+      {open && (
+        <form
+          onSubmit={submit}
+          noValidate
+          aria-label="Tulis ulasan"
+          className="tr-anim-up mx-auto mt-2 max-w-xl space-y-4 rounded-[2rem] bg-white p-6 shadow-card md:p-9"
+        >
+          <h3 className="font-display text-3xl font-bold text-navy">Tulis ulasan</h3>
+
+          <Field label="Nama" id="rv-nama" error={errors.nama}>
+            <input
+              id="rv-nama"
+              className={cls('nama')}
+              placeholder="Nama kamu"
+              value={form.nama}
+              onChange={set('nama')}
+              autoComplete="name"
+              maxLength={40}
+              {...a11y('nama')}
+            />
+          </Field>
+
+          <Field label="Kamu siapa? (opsional)" id="rv-peran" error={errors.peran}>
+            <input
+              id="rv-peran"
+              className={cls('peran')}
+              placeholder="Mis. Mahasiswa, Pelanggan Dago"
+              value={form.peran}
+              onChange={set('peran')}
+              maxLength={30}
+              {...a11y('peran')}
+            />
+          </Field>
+
+          <div>
+            <p id="rv-rating-label" className="mb-1.5 text-sm font-bold text-navy-dark">Rating</p>
+            <RatingInput
+              value={form.rating}
+              invalid={!!errors.rating}
+              onChange={(n) => {
+                setForm((f) => ({ ...f, rating: n }))
+                setErrors((er) => ({ ...er, rating: undefined }))
+              }}
+            />
+            {errors.rating && (
+              <p role="alert" className="mt-1.5 text-xs font-semibold text-chili">{errors.rating}</p>
+            )}
+          </div>
+
+          <Field
+            label="Ulasanmu"
+            id="rv-teks"
+            error={errors.teks}
+            hint={`${form.teks.length}/200 karakter (minimal 10)`}
+          >
+            <textarea
+              id="rv-teks"
+              rows={4}
+              className={cls('teks')}
+              placeholder="Ceritakan pengalamanmu di Temu Rasa"
+              value={form.teks}
+              onChange={set('teks')}
+              maxLength={200}
+              {...a11y('teks')}
+            />
+          </Field>
+
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Button type="submit" variant="accent" size="lg" disabled={submitting} aria-busy={submitting}>
+              {submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 size={18} className="animate-spin" /> Mengirim...
+                </span>
+              ) : (
+                'Kirim ulasan'
+              )}
+            </Button>
+            <Button type="button" variant="ghost" size="lg" onClick={closeForm} disabled={submitting}>
+              Batal
+            </Button>
+          </div>
+        </form>
+      )}
+    </section>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\context\CartContext.jsx
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+
+const CartContext = createContext(null)
+export const useCart = () => useContext(CartContext)
+
+const seedOrders = [
+  { id: 'TR001234', date: '12 Mei 2025', status: 'Selesai', total: 48000, items: ['Nasi Ayam Geprek x2', 'Es Kopi Susu x1'] },
+  { id: 'TR001233', date: '10 Mei 2025', status: 'Dikirim', total: 36000, items: ['Nasi Rendang x1', 'Thai Tea x1'] },
+  { id: 'TR001232', date: '8 Mei 2025', status: 'Diproses', total: 52000, items: ['Mie Ayam Special x2', 'French Fries x1'] },
+]
+
+// Baca/tulis localStorage dengan aman (tidak crash kalau storage diblokir atau datanya rusak)
+const CART_KEY = 'temurasa-cart'
+const ORDERS_KEY = 'temurasa-orders'
+
+const load = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key)
+    const data = raw ? JSON.parse(raw) : fallback
+    return Array.isArray(data) ? data : fallback
+  } catch {
+    return fallback
+  }
+}
+const save = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    /* abaikan: storage penuh atau diblokir */
+  }
+}
+
+export function CartProvider({ children }) {
+  const [items, setItems] = useState(() => load(CART_KEY, []))
+  const [cartOpen, setCartOpen] = useState(false)
+  // hanya pesanan buatan user yang disimpan; data contoh (seed) ditambahkan saat dibaca
+  const [userOrders, setUserOrders] = useState(() => load(ORDERS_KEY, []))
+
+  useEffect(() => save(CART_KEY, items), [items])
+  useEffect(() => save(ORDERS_KEY, userOrders), [userOrders])
+
+  const orders = useMemo(() => [...userOrders, ...seedOrders], [userOrders])
+
+  const key = (p, v) => `${p.id}-${v}`
+
+  // Catatan: keranjang tidak lagi terbuka otomatis. Umpan baliknya lewat toast
+  // (dipanggil di komponen yang menekan tombol tambah).
+  const addItem = (product, qty = 1, variant = '') => {
+    setItems((prev) => {
+      const k = key(product, variant)
+      const found = prev.find((i) => i.key === k)
+      if (found) return prev.map((i) => (i.key === k ? { ...i, qty: i.qty + qty } : i))
+      return [...prev, { key: k, product, variant, qty }]
+    })
+  }
+  const inc = (k) => setItems((p) => p.map((i) => (i.key === k ? { ...i, qty: i.qty + 1 } : i)))
+  const dec = (k) =>
+    setItems((p) => p.map((i) => (i.key === k ? { ...i, qty: i.qty - 1 } : i)).filter((i) => i.qty > 0))
+  const remove = (k) => setItems((p) => p.filter((i) => i.key !== k))
+  const clear = () => setItems([])
+
+  // `customer` = data dari form checkout (nama, HP, alamat, dll). Opsional supaya
+  // pemanggilan lama placeOrder(total) tetap jalan.
+  const placeOrder = (total, customer = {}) => {
+    const id = 'TR' + String(1235 + userOrders.length).padStart(6, '0')
+    const order = {
+      id,
+      total,
+      status: 'Diproses',
+      date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      items: items.map((i) => `${i.product.name} x${i.qty}`),
+      customer,
+    }
+    setUserOrders((o) => [order, ...o])
+    clear()
+    return order
+  }
+
+  const subtotal = useMemo(() => items.reduce((s, i) => s + i.product.price * i.qty, 0), [items])
+  const count = useMemo(() => items.reduce((s, i) => s + i.qty, 0), [items])
+
+  return (
+    <CartContext.Provider
+      value={{ items, subtotal, count, addItem, inc, dec, remove, clear, cartOpen, setCartOpen, orders, placeOrder }}
+    >
+      {children}
+    </CartContext.Provider>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\data\products.js
+export const rupiah = (n) => 'Rp ' + n.toLocaleString('id-ID')
+
+export const categories = ['Semua', 'Makanan', 'Minuman', 'Camilan']
+
+// Ganti `image` dengan URL/gambar asli bila ada. Jika kosong, emoji dipakai sebagai placeholder.
+export const products = [
+  { id: 1, name: 'Nasi Ayam Geprek', category: 'Makanan', price: 18000, rating: 4.8, reviews: 1200, emoji: 'ðŸ—', bg: '#FDE7C8', bestSeller: true,
+    desc: 'Ayam crispy dengan sambal khas Temu Rasa, disajikan dengan nasi hangat, lalapan, dan telur ceplok.',
+    composition: ['Ayam', 'Nasi', 'Sambal', 'Telur', 'Lalapan'], variants: ['Level 1', 'Level 3', 'Level 5'] },
+  { id: 2, name: 'Nasi Rendang', category: 'Makanan', price: 22000, rating: 4.7, reviews: 860, emoji: 'ðŸ›', bg: '#F6D9C4',
+    desc: 'Rendang sapi empuk berbumbu pekat, dimasak lama hingga meresap.',
+    composition: ['Daging sapi', 'Santan', 'Nasi', 'Rempah'], variants: ['Biasa', 'Jumbo'] },
+  { id: 3, name: 'Mie Ayam Special', category: 'Makanan', price: 16000, rating: 4.6, reviews: 540, emoji: 'ðŸœ', bg: '#FFE9A8',
+    desc: 'Mie kenyal dengan topping ayam kecap, pangsit, dan kuah kaldu gurih.',
+    composition: ['Mie', 'Ayam', 'Pangsit', 'Sawi'], variants: ['Biasa', 'Pangsit Ekstra'] },
+  { id: 4, name: 'Nasi Goreng Kampung', category: 'Makanan', price: 15000, rating: 4.5, reviews: 430, emoji: 'ðŸ³', bg: '#F9DDB5',
+    desc: 'Nasi goreng cita rasa rumahan dengan teri, telur, dan acar.',
+    composition: ['Nasi', 'Teri', 'Telur', 'Acar'], variants: ['Pedas', 'Tidak Pedas'] },
+  { id: 5, name: 'Es Kopi Susu', category: 'Minuman', price: 16000, rating: 4.9, reviews: 2100, emoji: 'ðŸ§‹', bg: '#EAD7C3', bestSeller: true,
+    desc: 'Espresso, susu segar, dan gula aren dalam segelas kesegaran.',
+    composition: ['Espresso', 'Susu', 'Gula aren', 'Es batu'], variants: ['Less Sugar', 'Normal', 'Extra Shot'] },
+  { id: 6, name: 'Matcha Latte', category: 'Minuman', price: 18000, rating: 4.6, reviews: 610, emoji: 'ðŸµ', bg: '#DCE8C6',
+    desc: 'Matcha premium berpadu susu creamy, segar dan lembut.',
+    composition: ['Matcha', 'Susu', 'Es batu'], variants: ['Less Sugar', 'Normal'] },
+  { id: 7, name: 'Thai Tea', category: 'Minuman', price: 14000, rating: 4.5, reviews: 390, emoji: 'ðŸ¥¤', bg: '#FFD9B0',
+    desc: 'Teh Thailand manis dengan susu, wangi dan menyegarkan.',
+    composition: ['Teh Thailand', 'Susu', 'Gula'], variants: ['Less Sugar', 'Normal'] },
+  { id: 8, name: 'Chocolate Latte', category: 'Minuman', price: 16000, rating: 4.7, reviews: 720, emoji: 'ðŸ«', bg: '#E4CDBF',
+    desc: 'Cokelat pekat dengan susu hangat atau dingin.',
+    composition: ['Cokelat', 'Susu', 'Es batu'], variants: ['Panas', 'Dingin'] },
+  { id: 9, name: 'French Fries', category: 'Camilan', price: 15000, rating: 4.4, reviews: 300, emoji: 'ðŸŸ', bg: '#FFEFB5',
+    desc: 'Kentang goreng renyah dengan bumbu pilihan.',
+    composition: ['Kentang', 'Garam', 'Saus'], variants: ['Original', 'BBQ', 'Keju'] },
+  { id: 10, name: 'Pisang Goreng Keju', category: 'Camilan', price: 12000, rating: 4.6, reviews: 280, emoji: 'ðŸŒ', bg: '#FCE6A9',
+    desc: 'Pisang goreng hangat dengan taburan keju dan susu.',
+    composition: ['Pisang', 'Keju', 'Susu kental'], variants: ['Keju', 'Cokelat'] },
+]
+===== C:\temu-rasa (1)\temu-rasa\src\hooks\useProducts.js
+import { useCallback, useEffect, useState } from 'react'
+
+// Nanti bisa diganti ke MockAPI lewat .env.local: VITE_API_URL=https://xxxx.mockapi.io/products
+const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.BASE_URL}menu.json`
+
+// Jeda minimum supaya skeleton sempat terlihat (data lokal terlalu cepat)
+const MIN_LOADING_MS = 700
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+
+export default function useProducts() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [attempt, setAttempt] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function load() {
+      setLoading(true)
+      setError(null)
+      try {
+        const [res] = await Promise.all([
+          fetch(API_URL, { signal: controller.signal }),
+          wait(MIN_LOADING_MS),
+        ])
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        if (!Array.isArray(data)) throw new Error('Format data tidak valid')
+        setProducts(data)
+      } catch (err) {
+        if (err.name === 'AbortError') return
+        setError('Gagal memuat data. Coba lagi')
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    }
+
+    load()
+    return () => controller.abort()
+  }, [attempt])
+
+  const reload = useCallback(() => setAttempt((a) => a + 1), [])
+
+  return { products, loading, error, reload }
+}
+===== C:\temu-rasa (1)\temu-rasa\src\pages\Checkout.jsx
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Check, CheckCircle2, Loader2 } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { useCart } from '../context/CartContext'
+import { rupiah } from '../data/products'
+import Button from '../components/Button'
+
+const steps = ['Alamat', 'Pembayaran', 'Konfirmasi']
+const shipping = { reg: { label: 'Regular (30â€“45 menit)', fee: 8000 }, exp: { label: 'Express (15â€“25 menit)', fee: 15000 } }
+const payments = { bank: 'Transfer Bank (BCA, BNI, BRI, Mandiri)', ewallet: 'E-Wallet (OVO, GoPay, DANA, ShopeePay)', cod: 'COD (Bayar di Tempat)' }
+
+// Opsional: isi VITE_ORDER_URL di .env.local (Formspree / MockAPI) supaya pesanan benar-benar dikirim.
+// Kalau kosong, pesanan hanya disimpan di localStorage (lewat CartContext).
+const ORDER_URL = import.meta.env.VITE_ORDER_URL
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+
+async function sendOrder(payload) {
+  if (!ORDER_URL) {
+    await wait(1000) // jeda singkat supaya state "Mengirim..." terlihat
+    return
+  }
+  const res = await fetch(ORDER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+}
+
+// Kartu pilihan (radio) yang jelas: lingkaran terisi + border navy saat dipilih
+function Radio({ checked, onChange, title, sub, right }) {
+  return (
+    <label
+      className={`flex cursor-pointer items-center gap-4 rounded-2xl border-2 p-4 transition-colors ${
+        checked ? 'border-navy bg-sun-soft' : 'border-navy/10 bg-white hover:border-navy/30'
+      }`}
+    >
+      <input type="radio" checked={checked} onChange={onChange} className="peer sr-only" />
+      <span
+        aria-hidden="true"
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors peer-focus-visible:ring-4 peer-focus-visible:ring-sun ${
+          checked ? 'border-navy bg-navy' : 'border-navy/30 bg-white'
+        }`}
+      >
+        {checked && <span className="h-2 w-2 rounded-full bg-sun" />}
+      </span>
+      <span className="flex-1">
+        <span className="block text-sm font-bold text-navy-dark">{title}</span>
+        {sub && <span className="text-xs text-navy/60">{sub}</span>}
+      </span>
+      {right && <span className="text-sm font-extrabold text-navy">{right}</span>}
+    </label>
+  )
+}
+
+function Field({ label, htmlFor, error, children }) {
+  return (
+    <div>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-bold text-navy-dark">{label}</label>
+      {children}
+      {error && (
+        <p role="alert" className="mt-1.5 text-xs font-semibold text-chili">{error}</p>
+      )}
+    </div>
+  )
+}
+
+// Validasi + sanitasi data pengiriman (dipakai di langkah 1 dan saat submit)
+const cleanPhone = (v) => v.replace(/[\s-]/g, '')
+function validate(form) {
+  const e = {}
+  if (form.nama.trim().length < 2) e.nama = 'Nama minimal 2 huruf'
+  if (!/^(\+62|62|0)8\d{8,11}$/.test(cleanPhone(form.hp))) e.hp = 'Nomor HP tidak valid, contoh: 081234567890'
+  if (form.alamat.trim().length < 10) e.alamat = 'Alamat minimal 10 karakter'
+  return e
+}
+
+export default function Checkout() {
+  const { items, subtotal, placeOrder } = useCart()
+  const [step, setStep] = useState(0)
+  const [form, setForm] = useState({ nama: '', hp: '', alamat: '' })
+  const [errors, setErrors] = useState({})
+  const [ship, setShip] = useState('reg')
+  const [pay, setPay] = useState('bank')
+  const [done, setDone] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const fee = shipping[ship].fee
+  const total = subtotal + fee
+
+  // ketik ulang di kolom = pesan error kolom itu hilang
+  const set = (k) => (e) => {
+    const value = e.target.value
+    setForm((f) => ({ ...f, [k]: value }))
+    setErrors((er) => ({ ...er, [k]: undefined }))
+  }
+
+  if (done) return (
+    <div className="container-page max-w-md py-20 text-center">
+      <span className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-sun shadow-sun">
+        <CheckCircle2 size={64} className="text-navy-dark" />
+      </span>
+      <h1 className="title-display mt-6 text-5xl">Pesanan Berhasil!</h1>
+      <p className="mt-3 text-navy-dark/70">Nomor pesanan <b>{done.id}</b>. Total {rupiah(done.total)}.</p>
+      <p className="mt-2 font-script text-2xl font-bold text-navy-light">Makan enak, kemana aja!</p>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <Button to="/pesanan">Lihat Pesanan</Button>
+        <Button to="/menu" variant="outline">Pesan Lagi</Button>
+      </div>
+    </div>
+  )
+  if (items.length === 0) return (
+    <div className="container-page max-w-md py-24 text-center">
+      <h1 className="font-display text-3xl font-black text-navy">Keranjang kosong</h1>
+      <p className="mt-2 text-navy-dark/60">Tambahkan menu dulu sebelum checkout.</p>
+      <Button to="/menu" variant="accent" className="mt-6">Lihat Menu</Button>
+    </div>
+  )
+
+  const next = () => {
+    if (step === 0) {
+      const e = validate(form)
+      setErrors(e)
+      if (Object.keys(e).length) {
+        toast.error('Periksa lagi data yang diisi')
+        return
+      }
+    }
+    setStep(step + 1)
+  }
+
+  const submitOrder = async () => {
+    if (submitting) return // cegah klik ganda
+
+    // validasi ulang, jaga-jaga data diubah lewat tombol "Kembali"
+    const e = validate(form)
+    if (Object.keys(e).length) {
+      setErrors(e)
+      setStep(0)
+      toast.error('Periksa lagi data pengirimanmu')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const customer = {
+        nama: form.nama.trim(),
+        hp: cleanPhone(form.hp),
+        alamat: form.alamat.trim(),
+        pengiriman: shipping[ship].label,
+        pembayaran: payments[pay],
+      }
+      // kirim dulu; kalau gagal, keranjang tetap utuh
+      await sendOrder({
+        customer,
+        items: items.map((i) => ({ nama: i.product.name, varian: i.variant, qty: i.qty, harga: i.product.price })),
+        total,
+      })
+      const order = placeOrder(total, customer)
+      setDone(order)
+      toast.success(`Pesanan ${order.id} berhasil dikirim!`)
+    } catch {
+      toast.error('Pesanan gagal dikirim. Coba lagi sebentar lagi.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const fieldCls = (k) => `input ${errors[k] ? '!border-chili !ring-chili/20' : ''}`
+
+  return (
+    <div className="container-page max-w-5xl py-10 md:py-14">
+      <h1 className="title-display text-5xl">Checkout</h1>
+
+      {/* Stepper: ini memang urutan langkah, jadi pakai nomor */}
+      <ol className="mt-8 flex items-center gap-2 text-sm">
+        {steps.map((s, i) => (
+          <li key={s} className="flex flex-1 items-center gap-2" aria-current={i === step ? 'step' : undefined}>
+            <span
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-extrabold transition-colors ${
+                i < step
+                  ? 'bg-navy text-white'
+                  : i === step
+                  ? 'bg-sun text-navy-dark shadow-sun'
+                  : 'border-2 border-navy/20 text-navy/50'
+              }`}
+            >
+              {i < step ? <Check size={16} strokeWidth={3} /> : i + 1}
+            </span>
+            <span className={`hidden sm:inline ${i === step ? 'font-extrabold text-navy' : 'font-semibold text-navy/55'}`}>{s}</span>
+            {i < 2 && <span className={`h-0.5 flex-1 rounded-full ${i < step ? 'bg-navy' : 'bg-navy/15'}`} />}
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-8 grid items-start gap-6 md:grid-cols-[1fr_340px] md:gap-8">
+        <section className="space-y-4 rounded-[2rem] bg-white p-6 shadow-card md:p-8">
+          {step === 0 && (<>
+            <h2 className="font-display text-2xl font-black text-navy">Alamat Pengiriman</h2>
+            {[
+              ['nama', 'Nama penerima', 'name', 'text'],
+              ['hp', 'Nomor HP / WhatsApp', 'tel', 'tel'],
+            ].map(([k, l, ac, mode]) => (
+              <Field key={k} label={l} htmlFor={`f-${k}`} error={errors[k]}>
+                <input
+                  id={`f-${k}`}
+                  className={fieldCls(k)}
+                  placeholder={l}
+                  value={form[k]}
+                  onChange={set(k)}
+                  autoComplete={ac}
+                  inputMode={mode === 'tel' ? 'tel' : undefined}
+                  maxLength={k === 'nama' ? 60 : 20}
+                  aria-invalid={!!errors[k]}
+                />
+              </Field>
+            ))}
+            <Field label="Alamat lengkap" htmlFor="f-alamat" error={errors.alamat}>
+              <textarea
+                id="f-alamat"
+                rows={3}
+                className={fieldCls('alamat')}
+                placeholder="Alamat lengkap"
+                value={form.alamat}
+                onChange={set('alamat')}
+                autoComplete="street-address"
+                maxLength={250}
+                aria-invalid={!!errors.alamat}
+              />
+            </Field>
+            <h2 className="pt-4 font-display text-2xl font-black text-navy">Metode Pengiriman</h2>
+            <div className="space-y-3">
+              {Object.entries(shipping).map(([k, v]) => <Radio key={k} checked={ship === k} onChange={() => setShip(k)} title={v.label} right={rupiah(v.fee)} />)}
+            </div>
+          </>)}
+
+          {step === 1 && (<>
+            <h2 className="font-display text-2xl font-black text-navy">Metode Pembayaran</h2>
+            <div className="space-y-3">
+              {Object.entries(payments).map(([k, v]) => <Radio key={k} checked={pay === k} onChange={() => setPay(k)} title={v} />)}
+            </div>
+          </>)}
+
+          {step === 2 && (<>
+            <h2 className="font-display text-2xl font-black text-navy">Konfirmasi Pesanan</h2>
+            <div className="space-y-2 rounded-2xl bg-sun-soft p-4 text-sm leading-relaxed text-navy-dark">
+              <p><b>Alamat:</b> {form.nama.trim()} ({cleanPhone(form.hp)}) â€” {form.alamat.trim()}</p>
+              <p><b>Pengiriman:</b> {shipping[ship].label}</p>
+              <p><b>Pembayaran:</b> {payments[pay]}</p>
+            </div>
+            <ul className="divide-y divide-navy/10 rounded-2xl border-2 border-navy/10 text-sm">
+              {items.map((i) => (
+                <li key={i.key} className="flex justify-between gap-3 p-3.5">
+                  <span>{i.product.name} {i.variant && `(${i.variant})`} x{i.qty}</span>
+                  <span className="font-bold text-navy">{rupiah(i.product.price * i.qty)}</span>
+                </li>
+              ))}
+            </ul>
+          </>)}
+
+          <div className="flex flex-wrap gap-3 pt-4">
+            {step > 0 && (
+              <Button variant="outline" onClick={() => setStep(step - 1)} disabled={submitting}>
+                Kembali
+              </Button>
+            )}
+            {step < 2
+              ? <Button onClick={next}>Lanjut ke {steps[step + 1]}</Button>
+              : (
+                <Button variant="accent" size="lg" onClick={submitOrder} disabled={submitting} aria-busy={submitting}>
+                  {submitting ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 size={18} className="animate-spin" /> Mengirim...
+                    </span>
+                  ) : (
+                    'Buat Pesanan'
+                  )}
+                </Button>
+              )}
+          </div>
+        </section>
+
+        <aside className="h-fit rounded-[2rem] bg-navy p-6 text-sm text-white shadow-card md:sticky md:top-24">
+          <h2 className="font-display text-2xl font-black italic">Ringkasan Belanja</h2>
+          <div className="mt-4 flex justify-between text-white/80"><span>Subtotal</span><span>{rupiah(subtotal)}</span></div>
+          <div className="mt-2 flex justify-between text-white/80"><span>Ongkir</span><span>{rupiah(fee)}</span></div>
+          <div className="mt-4 flex items-baseline justify-between border-t border-white/15 pt-4">
+            <span className="font-bold">Total</span>
+            <span className="text-2xl font-extrabold text-sun">{rupiah(total)}</span>
+          </div>
+          <Link to="/menu" className="mt-5 block rounded-full py-2 text-center text-sm font-bold text-white/80 underline-offset-4 transition-colors hover:text-sun hover:underline">
+            Tambah menu lain
+          </Link>
+        </aside>
+      </div>
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\pages\Home.jsx
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowRight, Soup, Coffee, Camera, MapPin, Star } from 'lucide-react'
+import Button from '../components/Button'
+import CaraPesan from '../components/CaraPesan'
+import ErrorState from '../components/ErrorState'
+import Faq from '../components/Faq'
+import FoodCard from '../components/FoodCard'
+import Lokasi from '../components/Lokasi'
+import Marquee from '../components/Marquee'
+import Reservasi from '../components/Reservasi'
+import Reveal from '../components/Reveal'
+import Suasana from '../components/Suasana'
+import Ulasan from '../components/Ulasan'
+import { ProductSkeleton } from '../components/ProductSkeleton'
+import useProducts from '../hooks/useProducts'
+
+// Path foto dari public/img. Kalau ekstensi filemu .png / .webp, ganti di sini saja.
+const HERO_IMG = '/img/hero.jpg'
+const CAFE_IMG = '/img/cafe.jpg'
+
+const perks = [
+  { icon: Soup, label: 'Makanan Berat & Camilan' },
+  { icon: Coffee, label: 'Kopi & Minuman Kekinian' },
+  { icon: Camera, label: 'Suasana Nyaman & Instagramable' },
+]
+
+// jeda animasi masuk (ms), dipakai bersama class tr-anim-up
+const delay = (ms) => ({ animationDelay: `${ms}ms` })
+
+// Scroll halus ke section Lokasi
+const goLokasi = () => document.getElementById('lokasi')?.scrollIntoView({ behavior: 'smooth' })
+
+// Tampilkan foto; kalau file tidak ketemu, jatuh ke emoji supaya layout tidak rusak
+function Photo({ src, alt, emoji, className = '', emojiClass = 'text-8xl' }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return (
+      <div className={`flex items-center justify-center bg-sun-soft ${className}`}>
+        <span role="img" aria-label={alt} className={emojiClass}>{emoji}</span>
+      </div>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className={`object-cover ${className}`}
+    />
+  )
+}
+
+export default function Home() {
+  const { products, loading, error, reload } = useProducts()
+
+  const favorites = products
+    .filter((p) => p.bestSeller || p.rating >= 4.7)
+    .slice(0, 4)
+
+  // menu paling banyak ulasannya, dipakai di kartu melayang pada hero
+  const top = products.length
+    ? products.reduce((a, b) => (b.reviews > a.reviews ? b : a))
+    : null
+
+  return (
+    <>
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        {/* blob kuning samar di kiri atas */}
+        <div
+          aria-hidden="true"
+          className="tr-anim-blob2 pointer-events-none absolute -left-28 top-[8%] h-80 w-80 rounded-blob bg-sun opacity-20"
+        />
+
+        <div className="container-page relative grid items-center gap-12 py-12 md:grid-cols-[1.05fr_0.95fr] md:py-20">
+          <div>
+            {/* tagline dibungkus supaya miringnya tidak hilang oleh animasi */}
+            <div className="tr-anim-up" style={delay(100)}>
+              <p className="tagline">Banyak Rasa, Satu Cerita.</p>
+            </div>
+            <h1
+              className="title-display tr-anim-up mt-3 text-[5.5rem] sm:text-[7rem] md:text-[8.5rem]"
+              style={delay(250)}
+            >
+              Temu<br />Rasa
+            </h1>
+            <p className="tr-anim-up mt-6 max-w-md text-lg leading-relaxed text-navy-dark/75" style={delay(400)}>
+              Tempat makan dan minum yang menggabungkan rasa tradisional dan modern, untuk setiap cerita di setiap suapan.
+            </p>
+            <div className="tr-anim-up mt-8 flex flex-wrap gap-3" style={delay(550)}>
+              <Button to="/menu" variant="accent" size="lg">
+                Lihat Menu <ArrowRight size={18} />
+              </Button>
+              <Button variant="outline" size="lg" onClick={goLokasi}>
+                Cari lokasi
+              </Button>
+            </div>
+            <ul className="tr-anim-up mt-10 flex flex-wrap gap-x-8 gap-y-4" style={delay(700)}>
+              {perks.map(({ icon: Icon, label }) => (
+                <li key={label} className="flex max-w-[10.5rem] items-center gap-3 text-sm font-semibold leading-snug text-navy-dark/80">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sun-soft text-navy">
+                    <Icon size={20} />
+                  </span>
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="tr-anim-imgin relative isolate mx-auto w-full max-w-md">
+            <div className="blob-sun tr-anim-morph -right-6 -top-6 h-[105%] w-[105%]" />
+            <Photo
+              src={HERO_IMG}
+              alt="Es kopi susu dan nasi ayam geprek khas Temu Rasa"
+              emoji="ðŸ§‹"
+              emojiClass="text-[9rem]"
+              className="aspect-[4/5] w-full rounded-t-[999px] rounded-b-[2.5rem] shadow-card-hover"
+            />
+
+            {/* badge bulat: luar = posisi miring, dalam = bergoyang */}
+            <span className="absolute -right-3 top-10 rotate-12">
+              <span className="tr-anim-wob flex h-24 w-24 items-center justify-center rounded-full bg-navy p-3 text-center font-display text-xs font-bold italic leading-tight text-sun shadow-card">
+                Good Food Good Mood
+              </span>
+            </span>
+
+            {/* coretan tangan di atas foto */}
+            <span className="absolute -top-9 left-[8%] hidden -rotate-3 sm:block">
+              <span
+                className="tr-anim-up block font-script text-2xl font-bold text-navy-light"
+                style={delay(1400)}
+              >
+                Nong krong jadi lebih berarti!
+              </span>
+            </span>
+
+            {/* kartu melayang: menu paling banyak diulas (data dari menu.json) */}
+            <div className="tr-anim-float absolute -left-2 bottom-6 rounded-2xl bg-white px-5 py-3.5 shadow-card-hover sm:-left-6">
+              <p className="font-display text-lg font-bold leading-tight text-navy">
+                {top?.name ?? 'Es Kopi Susu'}
+              </p>
+              <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-navy/60">
+                <Star size={12} className="fill-sun text-sun" />
+                {top?.rating ?? 4.9}, paling sering dipesan
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PITA TEKS BERJALAN */}
+      <Marquee />
+
+      {/* MENU FAVORIT */}
+      <section className="container-page py-10">
+        <Reveal className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-3xl font-black text-navy md:text-4xl">
+              <span className="scribble">Menu Favorit</span>
+            </h2>
+            <p className="mt-3 font-script text-2xl font-bold text-navy-light">Paling sering dipesan minggu ini</p>
+          </div>
+          <Link to="/menu" className="flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-bold text-navy transition-colors hover:bg-navy/5">
+            Lihat Semua <ArrowRight size={14} />
+          </Link>
+        </Reveal>
+
+        {/* 1. Loading */}
+        {loading && (
+          <div
+            role="status"
+            aria-label="Memuat menu favorit"
+            className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5"
+          >
+            {Array.from({ length: 4 }, (_, i) => (
+              <ProductSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
+        {/* 2. Error */}
+        {!loading && error && <ErrorState message={error} onRetry={reload} />}
+
+        {/* 3. Data tampil (kartu muncul bergantian) */}
+        {!loading && !error && favorites.length > 0 && (
+          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+            {favorites.map((p, i) => (
+              <Reveal key={p.id} delay={i * 90} className="h-full [&>article]:h-full">
+                <FoodCard product={p} badge={p.bestSeller ? 'Best Seller' : undefined} />
+              </Reveal>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* TEMPAT FAVORIT BUAT NONGKRONG */}
+      <section className="container-page py-10">
+        <Reveal className="relative isolate overflow-hidden rounded-[2rem] bg-navy text-white">
+          <div className="absolute -bottom-16 -left-10 -z-10 h-56 w-56 rounded-blob bg-sun/90" />
+          <div className="grid items-center gap-6 md:grid-cols-[1.2fr_0.8fr]">
+            <div className="p-8 md:p-12">
+              <MapPin size={34} className="text-sun" />
+              <h3 className="mt-4 font-display text-3xl font-black italic leading-tight md:text-4xl">
+                Tempat Favorit Buat Nongkrong
+              </h3>
+              <p className="mt-3 max-w-sm text-white/80">
+                Dari sarapan sampai malam, semua ada di Temu Rasa.
+              </p>
+              <p className="mt-4 font-script text-2xl font-bold text-sun">Cobain juga, yuk!</p>
+              <Button to="/menu" variant="accent" size="lg" className="mt-6">Pesan Sekarang</Button>
+            </div>
+            <div className="hidden h-full min-h-[18rem] md:block">
+              <Photo
+                src={CAFE_IMG}
+                alt="Suasana nongkrong di Temu Rasa"
+                emoji="â˜•"
+                className="h-full w-full rounded-l-[6rem]"
+              />
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* CARA PESAN */}
+      <CaraPesan />
+
+      {/* LOKASI */}
+      <Lokasi />
+
+      {/* JAM BUKA & RESERVASI */}
+      <Reservasi />
+
+      {/* SUASANA KAMI */}
+      <Suasana />
+
+      {/* ULASAN PELANGGAN */}
+      <Ulasan />
+
+      {/* TANYA JAWAB */}
+      <Faq />
+    </>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\pages\Menu.jsx
+import { useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { LayoutGrid, List, Plus, Search, SearchX, Star, X } from 'lucide-react'
+import toast from 'react-hot-toast'
+import FoodCard, { Thumb, TAGS } from '../components/FoodCard'
+import Button from '../components/Button'
+import ErrorState from '../components/ErrorState'
+import Reveal from '../components/Reveal'
+import ProductSkeletonGrid from '../components/ProductSkeleton'
+import useProducts from '../hooks/useProducts'
+import { useCart } from '../context/CartContext'
+import { categories, rupiah } from '../data/products'
+
+// Chip filter. `key` harus sama dengan isi array `tags` di menu.json
+const chips = [
+  { key: 'pedas', label: 'Pedas' },
+  { key: 'vegetarian', label: 'Vegetarian' },
+]
+
+// Satu baris menu untuk tampilan "Daftar"
+function FoodRow({ product: p }) {
+  const { addItem } = useCart()
+
+  const handleAdd = () => {
+    addItem(p, 1, p.variants?.[0])
+    toast.success(`${p.name} masuk keranjang`)
+  }
+
+  return (
+    <li className="flex items-center gap-4 border-b border-dashed border-navy/15 py-5 transition-transform duration-200 hover:translate-x-1.5">
+      <Link to={`/menu/${p.id}`} className="shrink-0" aria-label={`Lihat ${p.name}`}>
+        <Thumb p={p} size="text-3xl" className="h-20 w-20 overflow-hidden rounded-2xl sm:h-24 sm:w-24" />
+      </Link>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Link
+            to={`/menu/${p.id}`}
+            className="font-display text-lg font-bold leading-tight text-navy-dark transition-colors hover:text-navy-light"
+          >
+            {p.name}
+          </Link>
+          {(p.tags ?? []).map((t) =>
+            TAGS[t] ? (
+              <span
+                key={t}
+                role="img"
+                title={TAGS[t].title}
+                aria-label={TAGS[t].title}
+                className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${TAGS[t].cls}`}
+              >
+                {TAGS[t].label}
+              </span>
+            ) : null
+          )}
+        </div>
+        <p className="mt-1 line-clamp-2 text-sm text-navy-dark/65">{p.desc}</p>
+        <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-navy/60">
+          <Star size={13} className="fill-sun text-sun" /> {p.rating}
+          <span className="font-medium text-navy/45">({p.reviews} ulasan)</span>
+        </p>
+      </div>
+
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        <span className="text-lg font-extrabold text-navy">{rupiah(p.price)}</span>
+        <button
+          onClick={handleAdd}
+          aria-label={`Tambah ${p.name} ke keranjang`}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-sun text-navy-dark shadow-sun transition hover:bg-sun-deep hover:text-white active:scale-95"
+        >
+          <Plus size={20} strokeWidth={2.5} />
+        </button>
+      </div>
+    </li>
+  )
+}
+
+// Skeleton untuk tampilan "Daftar"
+function RowSkeleton() {
+  return (
+    <div className="flex animate-pulse items-center gap-4 border-b border-dashed border-navy/15 py-5">
+      <div className="h-20 w-20 shrink-0 rounded-2xl bg-sun-soft sm:h-24 sm:w-24" />
+      <div className="flex-1 space-y-2">
+        <div className="h-5 w-1/2 rounded-full bg-sun-soft" />
+        <div className="h-3 w-3/4 rounded-full bg-sun-soft" />
+        <div className="h-3 w-1/4 rounded-full bg-sun-soft" />
+      </div>
+      <div className="h-10 w-10 shrink-0 rounded-full bg-sun-soft" />
+    </div>
+  )
+}
+
+export default function Menu() {
+  const { products, loading, error, reload } = useProducts()
+  const [params, setParams] = useSearchParams()
+  const [cat, setCat] = useState('Semua')
+  const [sort, setSort] = useState('default')
+  const [active, setActive] = useState([]) // chip yang sedang menyala
+  const [mode, setMode] = useState('kartu') // 'kartu' | 'daftar'
+
+  const rawQ = params.get('q') || ''
+  const q = rawQ.trim().toLowerCase()
+
+  const setQuery = (v) => setParams(v ? { q: v } : {}, { replace: true })
+  const toggleChip = (k) =>
+    setActive((a) => (a.includes(k) ? a.filter((x) => x !== k) : [...a, k]))
+
+  const list = useMemo(() => {
+    let r = products.filter(
+      (p) =>
+        (cat === 'Semua' || p.category === cat) &&
+        p.name.toLowerCase().includes(q) &&
+        active.every((t) => (p.tags ?? []).includes(t))
+    )
+    if (sort === 'murah') r = [...r].sort((a, b) => a.price - b.price)
+    if (sort === 'rating') r = [...r].sort((a, b) => b.rating - a.rating)
+    return r
+  }, [products, cat, q, sort, active])
+
+  const resetAll = () => {
+    setParams({})
+    setCat('Semua')
+    setSort('default')
+    setActive([])
+  }
+
+  return (
+    <div className="container-page py-10 md:py-14">
+      {/* Judul + coretan tangan */}
+      <div className="relative">
+        <h1 className="title-display text-6xl sm:text-7xl">Menu Kami</h1>
+        <p className="mt-3 max-w-md text-lg text-navy-dark/70">Rasa yang selalu bikin kamu balik lagi.</p>
+        <p
+          aria-hidden="true"
+          className="absolute right-0 top-0 hidden rotate-6 font-script text-3xl font-bold text-navy-light sm:block"
+        >
+          Enak banget!
+          <svg viewBox="0 0 60 30" className="ml-auto mr-6 mt-1 h-7 w-14 text-sun" fill="none">
+            <path d="M4 4 C 18 4, 30 14, 44 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <path d="M34 25 L45 25 L41 14" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </p>
+      </div>
+
+      {/* Baris 1: kategori + urutkan */}
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2" role="tablist">
+          {categories.map((c) => (
+            <button
+              key={c}
+              role="tab"
+              aria-selected={cat === c}
+              onClick={() => setCat(c)}
+              className={`pill ${cat === c ? 'pill-active' : ''}`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="input !w-auto !rounded-full !px-5 !py-2.5 font-semibold"
+          aria-label="Urutkan"
+        >
+          <option value="default">Urutkan</option>
+          <option value="murah">Harga terendah</option>
+          <option value="rating">Rating tertinggi</option>
+        </select>
+      </div>
+
+      {/* Baris 2: cari + chip + tampilan */}
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:max-w-xs">
+          <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-navy/50" />
+          <input
+            type="search"
+            value={rawQ}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cari menu..."
+            aria-label="Cari menu"
+            className="input !rounded-full !py-2.5 !pl-11 !pr-10 [&::-webkit-search-cancel-button]:hidden"
+          />
+          {rawQ && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              aria-label="Hapus pencarian"
+              className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-navy/60 transition-colors hover:bg-navy/5"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter menu">
+          {chips.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              aria-pressed={active.includes(c.key)}
+              onClick={() => toggleChip(c.key)}
+              className={`pill ${active.includes(c.key) ? 'pill-active' : ''}`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="ml-auto flex gap-2" role="group" aria-label="Tampilan menu">
+          <button
+            type="button"
+            aria-pressed={mode === 'daftar'}
+            onClick={() => setMode('daftar')}
+            className={`pill gap-2 ${mode === 'daftar' ? 'pill-active' : ''}`}
+          >
+            <List size={16} /> Daftar
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === 'kartu'}
+            onClick={() => setMode('kartu')}
+            className={`pill gap-2 ${mode === 'kartu' ? 'pill-active' : ''}`}
+          >
+            <LayoutGrid size={16} /> Kartu
+          </button>
+        </div>
+      </div>
+
+      {/* 1. Loading */}
+      {loading &&
+        (mode === 'kartu' ? (
+          <ProductSkeletonGrid count={8} />
+        ) : (
+          <div role="status" aria-label="Memuat menu" className="mt-4">
+            {Array.from({ length: 6 }, (_, i) => (
+              <RowSkeleton key={i} />
+            ))}
+          </div>
+        ))}
+
+      {/* 2. Error */}
+      {!loading && error && <ErrorState message={error} onRetry={reload} />}
+
+      {/* 3. Kosong */}
+      {!loading && !error && list.length === 0 && (
+        <div className="mx-auto mt-16 flex max-w-sm flex-col items-center gap-3 rounded-[2rem] bg-white px-8 py-12 text-center shadow-card">
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-sun-soft">
+            <SearchX size={36} className="text-navy" />
+          </span>
+          <h2 className="font-display text-2xl font-black text-navy">Menu tidak ditemukan</h2>
+          <p className="text-sm text-navy-dark/65">Coba kata kunci lain atau lihat semua menu.</p>
+          <Button className="mt-2" onClick={resetAll}>
+            Reset Pencarian
+          </Button>
+        </div>
+      )}
+
+      {/* 4. Data tampil */}
+      {!loading && !error && list.length > 0 && (
+        <>
+          <p className="mt-6 text-sm font-semibold text-navy/55">{list.length} menu</p>
+
+          {mode === 'kartu' ? (
+            <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+              {list.map((p, i) => (
+                <Reveal key={p.id} delay={(i % 4) * 80} className="h-full [&>article]:h-full">
+                  <FoodCard product={p} badge={p.bestSeller ? 'Best Seller' : undefined} />
+                </Reveal>
+              ))}
+            </div>
+          ) : (
+            <ul className="mt-2">
+              {list.map((p) => (
+                <FoodRow key={p.id} product={p} />
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\pages\OrderHistory.jsx
+import { useState } from 'react'
+import { ChevronDown, PackageSearch } from 'lucide-react'
+import { useCart } from '../context/CartContext'
+import { rupiah } from '../data/products'
+import Button from '../components/Button'
+
+const tabs = ['Semua', 'Diproses', 'Dikirim', 'Selesai']
+const badge = {
+  Diproses: 'bg-sun-soft text-amber-800',
+  Dikirim: 'bg-blue-100 text-blue-800',
+  Selesai: 'bg-green-100 text-green-800',
+}
+// Warna titik & garis kiri sesuai status (hanya tampilan)
+const dot = { Diproses: 'bg-sun', Dikirim: 'bg-blue-500', Selesai: 'bg-green-500' }
+
+export default function OrderHistory() {
+  const { orders } = useCart()
+  const [tab, setTab] = useState('Semua')
+  const [open, setOpen] = useState(null)
+  const list = orders.filter((o) => tab === 'Semua' || o.status === tab)
+
+  return (
+    <div className="container-page max-w-3xl py-10 md:py-14">
+      <h1 className="title-display text-5xl sm:text-6xl">Pesanan Saya</h1>
+      <p className="mt-3 font-script text-2xl font-bold text-navy-light">Makan enak, kemana aja!</p>
+
+      <div className="mt-7 flex flex-wrap gap-2" role="tablist">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={`pill ${tab === t ? 'pill-active' : ''}`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <ul className="mt-7 space-y-4">
+        {/* Empty state + tombol Reset */}
+        {list.length === 0 && (
+          <li className="flex flex-col items-center gap-3 rounded-[2rem] border-2 border-dashed border-navy/20 bg-white/60 p-12 text-center">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-sun-soft">
+              <PackageSearch size={30} className="text-navy" />
+            </span>
+            <p className="text-sm font-semibold text-navy/60">
+              {tab === 'Semua'
+                ? 'Kamu belum punya pesanan.'
+                : `Belum ada pesanan dengan status "${tab}".`}
+            </p>
+            {tab === 'Semua' ? (
+              <Button to="/menu" variant="accent" size="sm">Lihat Menu</Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setTab('Semua')}>
+                Lihat Semua Pesanan
+              </Button>
+            )}
+          </li>
+        )}
+
+        {list.map((o) => (
+          <li key={o.id} className="relative overflow-hidden rounded-3xl bg-white shadow-card">
+            <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1.5 ${dot[o.status] || 'bg-navy/20'}`} />
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 p-5 pl-7">
+              <div>
+                <p className="font-display text-xl font-black text-navy">#{o.id}</p>
+                <p className="text-xs font-semibold text-navy/55">{o.date}</p>
+              </div>
+              <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-extrabold ${badge[o.status] || 'bg-navy/10 text-navy'}`}>
+                <span className={`h-2 w-2 rounded-full ${dot[o.status] || 'bg-navy/30'}`} />
+                {o.status}
+              </span>
+              <p className="text-lg font-extrabold text-navy">{rupiah(o.total)}</p>
+              <button
+                onClick={() => setOpen(open === o.id ? null : o.id)}
+                aria-expanded={open === o.id}
+                className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-bold text-navy transition-colors hover:bg-navy/5"
+              >
+                {open === o.id ? 'Tutup' : 'Lihat Detail'}
+                <ChevronDown size={16} className={`transition-transform ${open === o.id ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+
+            {open === o.id && (
+              <div className="mx-5 mb-5 ml-7 space-y-3">
+                <ul className="space-y-1.5 rounded-2xl bg-cream p-4 text-sm font-semibold text-navy-dark/80">
+                  {o.items.map((i, idx) => (
+                    <li key={`${i}-${idx}`} className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sun" />
+                      {i}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Data pemesan dari form checkout (pesanan contoh tidak punya data ini) */}
+                {o.customer?.nama && (
+                  <div className="space-y-1 rounded-2xl bg-sun-soft p-4 text-sm leading-relaxed text-navy-dark">
+                    <p><b>Penerima:</b> {o.customer.nama} ({o.customer.hp})</p>
+                    <p><b>Alamat:</b> {o.customer.alamat}</p>
+                    <p><b>Pengiriman:</b> {o.customer.pengiriman}</p>
+                    <p><b>Pembayaran:</b> {o.customer.pembayaran}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\pages\ProductDetail.jsx
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { Star, Minus, Plus, ShoppingBag, ChevronRight } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { rupiah } from '../data/products'
+import useProducts from '../hooks/useProducts'
+import { useCart } from '../context/CartContext'
+import FoodCard, { Thumb } from '../components/FoodCard'
+import Button from '../components/Button'
+import ErrorState from '../components/ErrorState'
+
+// Skeleton khusus halaman detail (mengikuti bentuk layout: foto besar + info)
+function DetailSkeleton() {
+  return (
+    <div role="status" aria-label="Memuat menu" className="container-page animate-pulse py-8 md:py-12">
+      <div className="h-4 w-48 rounded-full bg-sun-soft" />
+      <div className="mt-8 grid items-start gap-10 md:grid-cols-2 md:gap-14">
+        <div className="aspect-square w-full rounded-[2.5rem] bg-sun-soft" />
+        <div className="space-y-4">
+          <div className="h-10 w-3/4 rounded-full bg-sun-soft" />
+          <div className="h-8 w-1/3 rounded-full bg-sun-soft" />
+          <div className="h-4 w-1/4 rounded-full bg-sun-soft" />
+          <div className="h-4 w-full rounded-full bg-sun-soft" />
+          <div className="h-4 w-5/6 rounded-full bg-sun-soft" />
+          <div className="flex gap-2 pt-6">
+            <div className="h-10 w-24 rounded-full bg-sun-soft" />
+            <div className="h-10 w-24 rounded-full bg-sun-soft" />
+            <div className="h-10 w-24 rounded-full bg-sun-soft" />
+          </div>
+          <div className="h-14 w-full rounded-full bg-sun-soft" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function ProductDetail() {
+  const { id } = useParams()
+  const { products, loading, error, reload } = useProducts()
+  const { addItem } = useCart()
+  const [variant, setVariant] = useState(null)
+  const [qty, setQty] = useState(1)
+
+  // pindah ke menu lain (mis. dari "Kamu mungkin juga suka") = varian dan jumlah kembali awal
+  useEffect(() => {
+    setVariant(null)
+    setQty(1)
+  }, [id])
+
+  // 1. Loading
+  if (loading) return <DetailSkeleton />
+
+  // 2. Error koneksi
+  if (error) return <ErrorState message={error} onRetry={reload} />
+
+  const p = products.find((x) => x.id === Number(id))
+
+  // 3. Menu tidak ada
+  if (!p) return (
+    <div className="container-page max-w-xl py-24 text-center">
+      <h1 className="font-display text-3xl font-black text-navy">Menu tidak ditemukan</h1>
+      <p className="mt-2 text-navy-dark/65">Menu ini mungkin sudah tidak tersedia.</p>
+      <Button to="/menu" className="mt-6">Kembali ke Menu</Button>
+    </div>
+  )
+
+  const variants = p.variants ?? []
+  const selected = variant ?? variants[0] ?? ''
+  const related = products.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 4)
+
+  const handleAdd = () => {
+    addItem(p, qty, selected)
+    toast.success(`${qty}x ${p.name} masuk keranjang`)
+  }
+
+  return (
+    <div className="container-page py-8 md:py-12">
+      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1 text-sm text-navy/60">
+        <Link to="/menu" className="font-semibold hover:text-navy">Menu</Link>
+        <ChevronRight size={14} />
+        <span>{p.category}</span>
+        <ChevronRight size={14} />
+        <span className="font-bold text-navy">{p.name}</span>
+      </nav>
+
+      <div className="mt-8 grid items-start gap-10 md:grid-cols-2 md:gap-14">
+        {/* Foto besar + blob kuning */}
+        <div className="relative isolate">
+          <div className="blob-sun -left-5 -top-5 h-[104%] w-[104%] -rotate-6" />
+          <Thumb
+            p={p}
+            size="text-[9rem]"
+            className="aspect-square overflow-hidden rounded-[2.5rem] shadow-card-hover"
+          />
+          {p.bestSeller && (
+            <span className="sticker absolute -right-2 top-6 !px-4 !py-1.5 !text-sm">Best Seller</span>
+          )}
+        </div>
+
+        <div>
+          <h1 className="font-display text-4xl font-black leading-tight text-navy md:text-5xl">{p.name}</h1>
+          <p className="mt-3 text-3xl font-extrabold text-navy">{rupiah(p.price)}</p>
+          <p className="mt-3 flex items-center gap-1.5 text-sm">
+            <Star size={17} className="fill-sun text-sun" />
+            <b>{p.rating}</b>
+            <span className="text-navy/60">({p.reviews} ulasan)</span>
+          </p>
+          <p className="mt-5 max-w-prose leading-relaxed text-navy-dark/75">{p.desc}</p>
+
+          {variants.length > 0 && (
+            <>
+              <h3 className="mt-8 font-display text-lg font-bold text-navy-dark">Pilihan Varian</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {variants.map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setVariant(v)}
+                    aria-pressed={selected === v}
+                    className={`pill ${selected === v ? 'pill-active' : ''}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div className="mt-8 flex flex-wrap items-center gap-3 sm:flex-nowrap">
+            <div className="flex items-center gap-1 rounded-full border-2 border-navy/15 bg-white p-1">
+              <button
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                aria-label="Kurangi"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-navy transition-colors hover:bg-navy/5 active:scale-95"
+              >
+                <Minus size={16} />
+              </button>
+              <span className="w-8 text-center text-lg font-extrabold text-navy" aria-live="polite">{qty}</span>
+              <button
+                onClick={() => setQty((q) => Math.min(99, q + 1))}
+                aria-label="Tambah"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-navy transition-colors hover:bg-navy/5 active:scale-95"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+            <Button onClick={handleAdd} variant="accent" size="lg" className="flex-1">
+              <ShoppingBag size={18} /> Tambah ke Keranjang
+            </Button>
+          </div>
+
+          {p.composition?.length > 0 && (
+            <div className="mt-10 rounded-3xl bg-sun-soft p-5">
+              <h3 className="font-display text-lg font-bold text-navy-dark">Komposisi</h3>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {p.composition.map((c) => (
+                  <li key={c} className="rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-navy-dark/80">
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <>
+          <div className="mt-16 flex flex-wrap items-end gap-x-4">
+            <h2 className="font-display text-3xl font-black text-navy">
+              <span className="scribble">Kamu mungkin juga suka</span>
+            </h2>
+            <p className="font-script text-2xl font-bold text-navy-light">Coba juga yuk!</p>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+            {related.map((r) => (
+              <FoodCard key={r.id} product={r} badge={r.bestSeller ? 'Best Seller' : undefined} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\App.jsx
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Toaster } from 'react-hot-toast'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
+import CartModal from './components/CartModal'
+import ScrollProgress from './components/ScrollProgress'
+import Home from './pages/Home'
+import Menu from './pages/Menu'
+import ProductDetail from './pages/ProductDetail'
+import Checkout from './pages/Checkout'
+import OrderHistory from './pages/OrderHistory'
+
+export default function App() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <ScrollProgress />
+      <Navbar />
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/menu/:id" element={<ProductDetail />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/pesanan" element={<OrderHistory />} />
+          <Route path="*" element={<Menu />} />
+        </Routes>
+      </main>
+      <Footer />
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 2500,
+          style: { borderRadius: '9999px', fontWeight: 600 },
+        }}
+      />
+      <CartModal />
+    </div>
+  )
+}
+===== C:\temu-rasa (1)\temu-rasa\src\index.css
+/* BARU: load font (harus paling atas, sebelum @tailwind) */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Plus+Jakarta+Sans:wght@400..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== KODE LAMA (tidak diubah) ===== */
+body { @apply bg-cream font-sans text-navy-dark antialiased; }
+.logo { @apply font-display italic font-black text-navy; }
+.input { @apply w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:ring-2 focus:ring-navy/20; }
+
+/* ===== BARU: dasar halaman ===== */
+html { scroll-behavior: smooth; }
+
+::selection { background: #F5B21B; color: #0A2750; }
+
+/* Fokus keyboard terlihat jelas di semua elemen interaktif */
+:focus-visible {
+  outline: 3px solid #F5B21B;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+img { @apply max-w-full; }
+
+/* ===== BARU: komponen khas Temu Rasa ===== */
+@layer components {
+  /* Judul besar ala logo: tebal, rapat, italic */
+  .title-display {
+    @apply font-display font-black italic leading-[0.95] tracking-tight text-navy;
+  }
+
+  /* Tagline tulisan tangan: "Banyak Rasa, Satu Cerita" */
+  .tagline {
+    @apply font-script text-2xl font-bold text-navy-light md:text-3xl;
+    transform: rotate(-3deg);
+    transform-origin: left center;
+  }
+
+  /* Badge ala stiker (Best Seller, Good Food Good Mood) */
+  .sticker {
+    @apply inline-flex items-center gap-1 rounded-full bg-sun px-3 py-1 text-xs font-extrabold text-navy-dark shadow-sun;
+    transform: rotate(-6deg);
+  }
+  .sticker-chili {
+    @apply bg-chili text-white;
+    box-shadow: 0 8px 20px -6px rgba(216, 67, 43, 0.5);
+  }
+
+  /* Blob kuning di belakang foto (taruh di wrapper relative) */
+  .blob-sun {
+    @apply absolute -z-10 bg-sun rounded-blob;
+  }
+
+  /* Garis bawah coretan tangan untuk judul section */
+  .scribble {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6 C 20 1, 40 9, 60 5 S 100 2, 118 6' fill='none' stroke='%23F5B21B' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.35em;
+    padding-bottom: 0.2em;
+  }
+
+  /* Pill filter / tab (Semua, Makanan, Minuman) */
+  .pill {
+    @apply inline-flex items-center rounded-full border border-navy/15 bg-white px-4 py-2 text-sm font-bold text-navy transition-colors hover:border-navy;
+  }
+  .pill-active {
+    @apply border-navy bg-navy text-white hover:border-navy;
+  }
+
+  /* Wadah halaman: lebar & padding konsisten */
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* ===== BARU: utilitas ===== */
+@layer utilities {
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
+
+/* ===== BARU (Modul 8): animasi tambahan, diambil dari temu-rasa-v21.html ===== */
+@keyframes tr-up { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes tr-imgin { from { opacity: 0; transform: translateX(40px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes tr-blobin { from { opacity: 0; transform: scale(.85) rotate(-4deg); } to { opacity: 1; transform: none; } }
+@keyframes tr-morph { 0%, 100% { border-radius: 44px; } 50% { border-radius: 62px 36px 64px 40px; } }
+@keyframes tr-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes tr-wob { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(-3deg) scale(1.06); } }
+@keyframes tr-bump { 40% { transform: scale(1.4); } }
+@keyframes tr-marquee { to { transform: translateX(-50%); } }
+@keyframes tr-blob2 {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  50% { transform: translate(40px, 30px) rotate(25deg); border-radius: 40% 60% 44% 56%; }
+}
+
+.tr-anim-up { animation: tr-up .8s cubic-bezier(.2, .7, .2, 1) both; }
+.tr-anim-imgin { animation: tr-imgin 1s .3s cubic-bezier(.2, .7, .2, 1) both; }
+.tr-anim-morph { animation: tr-blobin .9s .2s both, tr-morph 8s 1.3s ease-in-out infinite; }
+.tr-anim-float { animation: tr-float 5s ease-in-out infinite; }
+.tr-anim-wob { animation: tr-wob 3s ease-in-out infinite; }
+.tr-anim-blob2 { animation: tr-blob2 11s ease-in-out infinite; }
+.tr-anim-bump { animation: tr-bump .35s; }
+
+/* muncul saat di-scroll */
+.tr-reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.tr-reveal.is-in { opacity: 1; transform: none; }
+
+/* teks berjalan */
+.tr-marquee-track { animation: tr-marquee 30s linear infinite; }
+.tr-marquee:hover .tr-marquee-track { animation-play-state: paused; }
+
+/* ===== BARU: hormati pengguna yang mematikan animasi ===== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* animasi tambahan: matikan total, konten tetap langsung terlihat */
+  .tr-reveal { opacity: 1; transform: none; }
+  .tr-anim-up, .tr-anim-imgin, .tr-anim-morph, .tr-anim-float,
+  .tr-anim-wob, .tr-anim-blob2, .tr-anim-bump, .tr-marquee-track { animation: none; }
+}
+===== C:\temu-rasa (1)\temu-rasa\src\main.jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App.jsx'
+import { CartProvider } from './context/CartContext.jsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+)

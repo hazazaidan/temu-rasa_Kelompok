@@ -26,7 +26,7 @@ export default function Button({
   children,
   ...rest
 }) {
-  const cls = `inline-flex items-center justify-center gap-2 rounded-full font-bold transition duration-200 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${sizes[size]} ${styles[variant]} ${className}`
+  const cls = `inline-flex items-center justify-center gap-2 rounded-full font-bold transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:transform-none ${sizes[size]} ${styles[variant]} ${className}`
   if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>
   return <button className={cls} {...rest}>{children}</button>
 }
