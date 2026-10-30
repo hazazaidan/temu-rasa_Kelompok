@@ -1,0 +1,126 @@
+{
+  "pathData": [
+    {
+      "d": "M 6 11.5 L 1 11.5 C 0.798 11.5 0.616 11.378 0.538 11.191 C 0.461 11.005 0.504 10.79 0.647 10.646 L 5.293 6 L 0.647 1.353 C 0.504 1.21 0.461 0.996 0.538 0.808 C 0.616 0.622 0.798 0.5 1 0.5 L 6 0.5 C 6.133 0.5 6.26 0.552 6.354 0.646 L 11.354 5.646 C 11.549 5.841 11.549 6.159 11.354 6.354 L 6.354 11.354 C 6.26 11.447 6.133 11.5 6 11.5 Z",
+      "fill": "var(--token-3e9a3ce0-4058-491c-85d1-ce804a6e864f, rgb(100, 39, 20))",
+      "parentClass": ""
+    },
+    {
+      "d": "M 6 11.5 L 1 11.5 C 0.798 11.5 0.616 11.378 0.538 11.191 C 0.461 11.005 0.504 10.79 0.647 10.646 L 5.293 6 L 0.647 1.353 C 0.504 1.21 0.461 0.996 0.538 0.808 C 0.616 0.622 0.798 0.5 1 0.5 L 6 0.5 C 6.133 0.5 6.26 0.552 6.354 0.646 L 11.354 5.646 C 11.549 5.841 11.549 6.159 11.354 6.354 L 6.354 11.354 C 6.26 11.447 6.133 11.5 6 11.5 Z",
+      "fill": "var(--token-3e9a3ce0-4058-491c-85d1-ce804a6e864f, rgb(100, 39, 20))",
+      "parentClass": ""
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "A",
+      "text": "Explore Our Items\nExplore Our ",
+      "bg": "rgb(255, 155, 4)",
+      "color": "rgb(0, 0, 238)",
+      "radius": "40px",
+      "padding": "12px 24px",
+      "border": "0px none rgb(0, 0, 238)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Cakes\nCakes",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Cookies\nCookies",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Breads\nBreads",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Pastries\nPastries",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Cakes\nCakes",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Cookies\nCookies",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Breads\nBreads",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Pastries\nPastries",
+      "bg": "rgb(21, 7, 2)",
+      "color": "rgb(0, 0, 0)",
+      "radius": "8px",
+      "padding": "6px 18px",
+      "border": "0px outset rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "transition": "all"
+    },
+    {
+      "tag": "A",
+      "text": "View Details\nView Details",
+      "bg": "rgb(255, 155, 4)",
+      "color": "rgb(0, 0, 238)",
+      "radius": "40px",
+      "padding": "14px 24px",
+      "border": "0px none rgb(0, 0, 238)",
+      "boxShadow": "none",
+      "transition": "all"
+    }
+  ]
+}

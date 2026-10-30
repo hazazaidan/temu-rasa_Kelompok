@@ -1,0 +1,54 @@
+{
+  "title": "Bakery Template for Bakery Businesses",
+  "fonts": {
+    "h1": {
+      "text": "WHERE CRUMBS BECOME ART",
+      "fontSize": "136px",
+      "fontWeight": "400",
+      "fontFamily": "\"Lilita One\", sans-serif",
+      "lineHeight": "108.8px",
+      "letterSpacing": "-5.44px",
+      "color": "rgb(255, 246, 217)"
+    },
+    "h2": {
+      "text": "BE THE FIRST TO\nKNOW WHAT’S BAKING",
+      "fontSize": "56px",
+      "fontWeight": "400",
+      "fontFamily": "\"Lilita One\", sans-serif",
+      "lineHeight": "56px",
+      "letterSpacing": "-2.24px",
+      "color": "rgb(21, 7, 2)"
+    },
+    "body": {
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "fontFamily": "\"Lilita One\", sans-serif",
+      "lineHeight": "23.4px",
+      "color": "rgb(255, 155, 4)"
+    }
+  },
+  "colors": [
+    "rgb(0, 0, 0)",
+    "rgb(21, 7, 2)",
+    "rgb(0, 0, 238)",
+    "rgb(255, 246, 217)",
+    "rgb(255, 155, 4)",
+    "rgba(17, 17, 17, 0)",
+    "rgb(100, 39, 20)",
+    "rgb(255, 255, 255)",
+    "rgb(131, 82, 67)",
+    "rgb(68, 57, 53)",
+    "rgba(255, 255, 255, 0.2)",
+    "rgb(254, 203, 125)",
+    "rgba(187, 187, 187, 0.15)",
+    "rgb(44, 32, 27)",
+    "rgb(227, 216, 213)"
+  ],
+  "svgs": [],
+  "marquees": [],
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "scrollHeight": 8888
+  }
+}
